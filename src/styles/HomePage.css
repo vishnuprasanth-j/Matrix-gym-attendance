@@ -1,0 +1,109 @@
+html,body {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+#root{
+	width: 100%;
+}
+
+#codebg {
+	background: linear-gradient(rgb(0,20,0), rgb(20,50,20),rgb(0,20,0));
+	position: absolute;
+	z-index: -1;
+}
+
+.main-div{
+height:  100%;
+}
+
+.home-container{
+height: 100vh;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+}
+
+.rubik-doodle {
+	font-family: "Rubik Doodle Shadow", system-ui;
+	font-weight: 400;
+	font-style: normal;
+	font-size: clamp(2rem, -0.154rem + 4.615vw, 4rem);
+  }
+  
+  .bungee-regular {
+	font-family: "Bungee", sans-serif;
+	font-weight: 400;
+	font-style: normal;
+  }
+  
+  .buttons-div{
+	display: flex;
+	flex-direction: column;
+  }
+
+ a{
+	text-decoration: none;
+	color: inherit;
+  }
+
+  
+  /* CSS */
+  .button-59 {
+	gap: 6px;
+	margin-bottom: 10px;
+	align-items: center;
+	background-color: #fff;
+	border: 2px solid #000;
+	box-sizing: border-box;
+	color: #000;
+	cursor: pointer;
+	display: inline-flex;
+	fill: #000;
+	font-family: Inter,sans-serif;
+	font-size: 16px;
+	font-weight: 600;
+	height: 48px;
+	justify-content: center;
+	letter-spacing: -.8px;
+	line-height: 24px;
+	min-width: 140px;
+	outline: 0;
+	padding: 0 17px;
+	text-align: center;
+	text-decoration: none;
+	transition: all .3s;
+	user-select: none;
+	-webkit-user-select: none;
+	touch-action: manipulation;
+  }
+  
+  .button-59:focus {
+	color: #171e29;
+  }
+  
+  .button-59:hover {
+	border-color: rgb(255, 106, 0);
+	color: rgb(255, 106, 0);
+	fill: rgb(255, 106, 0);
+  }
+  
+  .button-59:active {
+	border-color: rgb(255, 106, 0);
+	color: rgb(255, 106, 0);
+	fill: rgb(255, 106, 0);
+  }
+  
+  @media (min-width: 768px) {
+	.button-59 {
+	  min-width: 170px;
+	}
+  }
+
