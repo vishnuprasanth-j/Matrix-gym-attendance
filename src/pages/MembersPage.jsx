@@ -1,24 +1,51 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
-import { db } from '../lib/firebase'; // Assuming 'db' is your Firestore instance
-import {Button, TableContainer, Table, TableHead, TableBody, TableRow, TableCell, TextField, Paper, TablePagination } from '@mui/material';
-import AddMemberModal from '../components/AddMemberModal';
+import { useContext, useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  updateDoc,
+  doc,
+  Timestamp,
+} from "firebase/firestore";
+import { db, SignOutUser } from "../lib/firebase"; // Assuming 'db' is your Firestore instance
+import {
+  Button,
+  TableContainer,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TextField,
+  Paper,
+  TablePagination,
+} from "@mui/material";
+import AddMemberModal from "../components/AddMemberModal";
+import { AuthContext } from "../lib/AuthContext";
+import RenewMemberModal from "../components/RenewMemberModal";
 
 const MembersPage = () => {
   const { branch } = useParams();
   const [members, setMembers] = useState([]);
   const [sortedMembers, setSortedMembers] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const navigate = useNavigate();
+  const { setCurrentUser } = useContext(AuthContext);
+  const [isRenewMemberModalOpen, setIsRenewMemberModalOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(null);
 
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const membersRef = collection(db, 'members');
-        const q = branch ? query(membersRef, where("branch", "==", branch)) : membersRef;
+        const membersRef = collection(db, "members");
+        const q = branch
+          ? query(membersRef, where("branch", "==", branch))
+          : membersRef;
         const querySnapshot = await getDocs(q);
         const membersData = [];
         querySnapshot.forEach((doc) => {
@@ -34,7 +61,7 @@ const MembersPage = () => {
   }, [branch]);
 
   useEffect(() => {
-    const filteredMembers = members.filter(member =>
+    const filteredMembers = members.filter((member) =>
       member.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setSortedMembers(filteredMembers);
@@ -53,9 +80,31 @@ const MembersPage = () => {
     setPage(0);
   };
 
-  const sortedAndPaginatedMembers = sortedMembers
-    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const calculateCurrPlanEnd = (currPlanStart, currentPlan) => {
+    const planLengths = {
+      plan1: 1, // Duration of plan1 in months
+      plan2: 6, // Duration of plan2 in months
+      plan3: 12, // Duration of plan3 in months
+    };
+    const planDurationMonths = planLengths[currentPlan] || 0;
+    if (!planDurationMonths) return null;
+    console.log(currPlanStart);
+    const planEnd = new Date(currPlanStart);
+    planEnd.setMonth(planEnd.getMonth() + planDurationMonths);
+    return planEnd;
+  };
 
+  const isPlanExpired = (currPlanStart, currentPlan) => {
+    const currPlanEnd = calculateCurrPlanEnd(currPlanStart, currentPlan);
+    if (!currPlanStart || !currPlanEnd) return false; // Return false if plan start or end date is not available
+    const now = new Date();
+    return now > currPlanEnd; // Check if the current date is after the plan end date
+  };
+
+  const sortedAndPaginatedMembers = sortedMembers.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
   const handleAddMemberButtonClick = () => {
     setIsAddMemberModalOpen(true);
   };
@@ -64,9 +113,56 @@ const MembersPage = () => {
     setIsAddMemberModalOpen(false);
   };
 
+  const handleSignOut = async () => {
+    try {
+      await SignOutUser();
+      navigate("/");
+      setCurrentUser();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
+  const handleRenewButtonClick = (member) => {
+    setSelectedMember(member);
+    setIsRenewMemberModalOpen(true);
+  };
+
+  const handleCloseRenewMemberModal = () => {
+    setSelectedMember(null);
+    setIsRenewMemberModalOpen(false);
+  };
+
+  const handleRenewMember = async (newPlan) => {
+    try {
+      if (!selectedMember) return;
+
+      const memberRef = doc(db, "members", selectedMember.id);
+      await updateDoc(memberRef, {
+        currentPlan: newPlan,
+        currPlanStart: Timestamp.now(),
+        planHistory: [
+          ...selectedMember.planHistory,
+          selectedMember.currentPlan,
+        ], 
+      });
+
+      setIsRenewMemberModalOpen(false);
+    } catch (error) {
+      console.error("Error renewing member:", error);
+    }
+  };
+
   return (
     <div>
-      <Button variant="contained" color="primary" onClick={handleAddMemberButtonClick}>Add New Member</Button>
+      <Button onClick={handleSignOut}>Logout</Button>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleAddMemberButtonClick}
+      >
+        Add New Member
+      </Button>
       <TextField
         label="Search by Name"
         value={searchQuery}
@@ -83,7 +179,9 @@ const MembersPage = () => {
               <TableCell>Age</TableCell>
               <TableCell>Gender</TableCell>
               <TableCell>Phone</TableCell>
-              {/* Add more table headers as needed */}
+              <TableCell>Weight</TableCell>
+              <TableCell>Height</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -93,7 +191,24 @@ const MembersPage = () => {
                 <TableCell>{member.age}</TableCell>
                 <TableCell>{member.gender}</TableCell>
                 <TableCell>{member.phone}</TableCell>
-                {/* Add more table cells as needed */}
+                <TableCell>{member.height + "cm"}</TableCell>
+                <TableCell>{member.weight + "kg"}</TableCell>
+                <TableCell>
+                  <Button>Edit</Button>
+                  {isPlanExpired(
+                    member.currPlanStart?.toDate() || "",
+                    member.currentPlan
+                  ) ? (
+                    <Button
+                      style={{ color: "red" }}
+                      onClick={() => handleRenewButtonClick(member)}
+                    >
+                      Renew
+                    </Button>
+                  ) : (
+                    <Button style={{ color: "green" }}>Active</Button>
+                  )}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -108,7 +223,16 @@ const MembersPage = () => {
           onRowsPerPageChange={handleRowsPerPageChange}
         />
       </TableContainer>
-      <AddMemberModal open={isAddMemberModalOpen} handleClose={handleCloseAddMemberModal} />
+      <AddMemberModal
+        open={isAddMemberModalOpen}
+        handleClose={handleCloseAddMemberModal}
+      />
+      <RenewMemberModal
+        open={isRenewMemberModalOpen}
+        handleClose={handleCloseRenewMemberModal}
+        memberData={selectedMember}
+        handleRenew={handleRenewMember}
+      />
     </div>
   );
 };

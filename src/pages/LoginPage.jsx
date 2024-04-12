@@ -100,7 +100,7 @@ const LoginPage = () => {
             <div className="input_pox">
               <span className="details">Password</span>
               <input
-                type="text"
+                type="password"
                 name="password"
                 placeholder="Password"
                 value={formData.password}
