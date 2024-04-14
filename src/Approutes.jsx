@@ -7,10 +7,14 @@ import DashboardPage from "./pages/DashboardPage";
 import { useContext } from "react";
 import { AuthContext } from "./lib/AuthContext";
 import AttendancePage from "./pages/AttendancePage";
+import EnquiryPage from "./pages/EnquiryPage";
+import { CircularProgress } from "@mui/material";
 
 const AppRoutes = () => {
-  const { currentUser } = useContext(AuthContext);
-
+  const { currentUser,authPending } = useContext(AuthContext);
+  // if (authPending) {
+  //   return <CircularProgress sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }} />;
+  // }
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
@@ -34,6 +38,10 @@ const AppRoutes = () => {
       <Route
         path="/Dashboard"
         element={currentUser != null ? <DashboardPage /> : <HomePage />}
+      />
+      <Route
+        path="/Enquiry/:branch"
+        element={currentUser != null ? <EnquiryPage /> : <HomePage />}
       />
       <Route path="/Attendance" element={<AttendancePage/>} />
       <Route path="*" element={<Navigate to="/" />} />

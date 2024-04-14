@@ -9,7 +9,6 @@ import {
   updateDoc,
   doc,
   Timestamp,
-  deleteDoc
 } from "firebase/firestore";
 import { db, SignOutUser } from "../lib/firebase"; // Assuming 'db' is your Firestore instance
 import {
@@ -29,8 +28,7 @@ import AddMemberModal from "../components/AddMemberModal";
 import { AuthContext } from "../lib/AuthContext";
 import RenewMemberModal from "../components/RenewMemberModal";
 import UserInfoModal from "../components/UserInfoModal";
-import Sidebar from "../components/SideBar";
-import ConfirmModal from '../components/ConfirmModal';
+import Sidebar from "../components/Sidebar";
 
 const MembersPage = () => {
   const { branch } = useParams();
@@ -41,11 +39,11 @@ const MembersPage = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const navigate = useNavigate();
+  const { setCurrentUser } = useContext(AuthContext);
   const [isRenewMemberModalOpen, setIsRenewMemberModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
   const [selectedMemberInfo, setSelectedMemberInfo] = useState(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
   useEffect(() => {
     const fetchMembers = async () => {
       try {
@@ -120,7 +118,15 @@ const MembersPage = () => {
     setIsAddMemberModalOpen(false);
   };
 
-  
+  const handleSignOut = async () => {
+    try {
+      await SignOutUser();
+      navigate("/");
+      setCurrentUser();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   const handleRenewButtonClick = (member) => {
     setSelectedMember(member);
@@ -178,34 +184,11 @@ const MembersPage = () => {
   const handleSidebarClose = () => {
     setIsSidebarOpen(false);
   };
-
-  const handleDeleteButtonClick = (member) => {
-    setSelectedMember(member);
-    setIsDeleteModalOpen(true);
-  };
-
-  const handleCloseDeleteModal = () => {
-    setSelectedMember(null);
-    setIsDeleteModalOpen(false);
-  };
-
-  const handleDeleteMember = async () => {
-    try {
-      if (!selectedMember) return;
-
-      const memberRef = doc(db, "members", selectedMember.id);
-      await deleteDoc(memberRef);
-
-      setIsDeleteModalOpen(false);
-    } catch (error) {
-      console.error("Error deleting member:", error);
-    }
-  };
-
   return (
     <div className="memberspage-container">
      <Button onClick={handleSidebarOpen}>Open Sidebar</Button>
       <Sidebar isOpen={isSidebarOpen} handleClose={handleSidebarClose} />
+      <Button onClick={handleSignOut}>Logout</Button>
       <Button
         variant="contained"
         color="primary"
@@ -239,7 +222,7 @@ const MembersPage = () => {
               <TableCell>Weight</TableCell>
               <TableCell>Height</TableCell>
               <TableCell>Days Left</TableCell>
-              <TableCell align='center'>Actions</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -262,9 +245,8 @@ const MembersPage = () => {
                   {daysLeft(member.currPlanStart?.toDate(), member.currentPlan)}
                 </TableCell>
 
-                <TableCell align='center'>
+                <TableCell>
                   <Button>Edit</Button>
-                 <Button onClick={() => handleDeleteButtonClick(member)}>Delete</Button>
                   {isPlanExpired(
                     member.currPlanStart?.toDate() || "",
                     member.currentPlan
@@ -307,13 +289,6 @@ const MembersPage = () => {
         open={selectedMemberInfo !== null}
         handleClose={() => setSelectedMemberInfo(null)}
         memberInfo={selectedMemberInfo}
-      />
-      
-      <ConfirmModal
-        open={isDeleteModalOpen}
-        onClose={handleCloseDeleteModal}
-        onConfirm={handleDeleteMember}
-        message="Are you sure you want to delete this member?"
       />
     </div>
   );

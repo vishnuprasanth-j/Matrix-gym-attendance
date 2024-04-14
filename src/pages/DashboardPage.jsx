@@ -1,143 +1,143 @@
-import { db, auth } from "../lib/firebase";
-import { useState, useEffect, useContext} from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import Chart from "chart.js/auto";
-import { SignOutUser } from "../lib/firebase";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../lib/AuthContext";
+import { SignOutUser, db } from "../lib/firebase";
+import { Button, Grid } from "@mui/material";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 
 const DashboardPage = () => {
   const navigate = useNavigate();
-  const [year, setYear] = useState(new Date().getFullYear());
-  const [revenueData, setRevenueData] = useState([]);
-  const{currentUser,authPending,setCurrentUser}=useContext(AuthContext)
+  const { setCurrentUser } = useContext(AuthContext);
+  const [maleCount, setMaleCount] = useState(0);
+  const [femaleCount, setFemaleCount] = useState(0);
+  const [activeCount, setActiveCount] = useState(0);
+  const [expiredCount, setExpiredCount] = useState(0);
+  const genderChartRef = useRef(null);
+  const statusChartRef = useRef(null);
+  const genderChartInstance = useRef(null);
+  const statusChartInstance = useRef(null);
+
   useEffect(() => {
-    const fetchRevenueData = async () => {
+    const fetchData = async () => {
       try {
-        // Check if revenue data for the selected year exists in local storage
-        const cachedData = localStorage.getItem(`revenueData_${year}`);
-        if (cachedData) {
-          setRevenueData(JSON.parse(cachedData));
-          return;
-        }
+        const querySnapshot = await getDocs(collection(db, "members"));
+        let maleCount = 0;
+        let femaleCount = 0;
+        let activeCount = 0;
+        let expiredCount = 0;
 
-        const q = query(
-          collection(db, "members"),
-          where("createdAt", ">=", new Date(`${year}-01-01`)),
-          where("createdAt", "<=", new Date(`${year}-12-31`))
-        );
-        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+          const { gender, currentPlan, currPlanStart } = doc.data();
+          if (gender === "Male") {
+            maleCount++;
+          } else if (gender === "Female") {
+            femaleCount++;
+          }
 
-        const data = querySnapshot.docs.map((doc) => doc.data());
-        const monthlyRevenue = Array.from({ length: 12 }, () => 0);
+          const planDuration = {
+            plan1: 1,
+            plan2: 4,
+            plan3: 6,
+            plan4: 12
+          };
 
-        data.forEach((user) => {
-          const planPrice = getPlanPrice(user.plan);
-          const month = user.createdAt.toDate().getMonth();
-          monthlyRevenue[month] += planPrice;
+          const expirationDate = new Date(currPlanStart.toDate());
+          expirationDate.setMonth(
+            expirationDate.getMonth() + planDuration[currentPlan]
+          );
+
+          if (expirationDate < new Date()) {
+            expiredCount++;
+          } else {
+            activeCount++;
+          }
         });
 
-        // Cache the revenue data in local storage
-        localStorage.setItem(
-          `revenueData_${year}`,
-          JSON.stringify(monthlyRevenue)
-        );
-
-        setRevenueData(monthlyRevenue);
+        setMaleCount(maleCount);
+        setFemaleCount(femaleCount);
+        setActiveCount(activeCount);
+        setExpiredCount(expiredCount);
       } catch (error) {
-        console.error("Error fetching revenue data:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
-    fetchRevenueData();
-  }, [year]);
-
-  const getPlanPrice = (plan) => {
-    switch (plan) {
-      case "Plan1":
-        return 1000;
-      case "Plan2":
-        return 3000;
-      case "Plan3":
-        return 10000;
-      default:
-        return 0;
-    }
-  };
+    fetchData();
+  }, []);
 
   useEffect(() => {
-    const ctx = document.getElementById("revenueChart").getContext("2d");
-    let chart = null;
-
-    if (chart) {
-      chart.destroy(); // Destroy the existing chart
-    }
-
-    chart = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: [
-          "January",
-          "February",
-          "March",
-          "April",
-          "May",
-          "June",
-          "July",
-          "August",
-          "September",
-          "October",
-          "November",
-          "December",
-        ],
-        datasets: [
-          {
-            label: "Revenue",
-            data: revenueData,
-            fill: false,
-            borderColor: "rgb(75, 192, 192)",
-            tension: 0.1,
-          },
-        ],
-      },
-      options: {
-        scales: {
-          y: {
-            beginAtZero: true,
-          },
-        },
-      },
-    });
-
-    return () => {
-      if (chart) {
-        chart.destroy(); // Clean up the chart when component unmounts
+    if (genderChartRef.current && statusChartRef.current) {
+      if (genderChartInstance.current) {
+        genderChartInstance.current.destroy();
       }
-    };
-  }, [revenueData]);
-  const handleChangeYear = (e) => {
-    setYear(e.target.value);
-  };
+      if (statusChartInstance.current) {
+        statusChartInstance.current.destroy();
+      }
+
+      const genderChartCanvas = genderChartRef.current;
+      genderChartInstance.current = new Chart(genderChartCanvas, {
+        type: "pie",
+        data: {
+          labels: ["Male", "Female"],
+          datasets: [
+            {
+              data: [maleCount, femaleCount],
+              backgroundColor: ["blue", "pink"]
+            }
+          ]
+        },
+        options: {
+          responsive: true
+        }
+      });
+
+      const statusChartCanvas = statusChartRef.current;
+      statusChartInstance.current = new Chart(statusChartCanvas, {
+        type: "pie",
+        data: {
+          labels: ["Active", "Expired"],
+          datasets: [
+            {
+              data: [activeCount, expiredCount],
+              backgroundColor: ["green", "red"]
+            }
+          ]
+        },
+        options: {
+          responsive: true
+        }
+      });
+    }
+  }, [maleCount, femaleCount, activeCount, expiredCount]);
+
   const handleSignOut = async () => {
     try {
       await SignOutUser();
-      navigate('/');
+      navigate("/");
       setCurrentUser();
-     } catch (error) {
+    } catch (error) {
       console.error("Error signing out:", error);
     }
   };
 
   return (
-    <div>
-      <button onClick={handleSignOut}>lout</button>
-      <label>Select Year:</label>
-      <select value={year} onChange={handleChangeYear}>
-        <option value="2023">2023</option>
-        <option value="2024">2024</option>
-        {/* Add more years as needed */}
-      </select>
-      <canvas id="revenueChart" width="400" height="400"></canvas>
+    <div className="dbpage-container">
+      <Button onClick={handleSignOut}>
+        Logout
+        <FontAwesomeIcon icon={faArrowRightFromBracket} />
+      </Button>
+      <Grid container spacing={3}>
+  <Grid item xs={12} sm={4} style={{ width: "100%", height: "300px" }} >
+    <canvas ref={genderChartRef} ></canvas>
+  </Grid>
+  <Grid item xs={12} sm={4} style={{ width: "100%", height: "300px" }}>
+    <canvas ref={statusChartRef} ></canvas>
+  </Grid>
+</Grid>
+
     </div>
   );
 };

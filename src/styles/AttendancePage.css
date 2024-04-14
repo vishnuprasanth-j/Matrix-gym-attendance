@@ -1,0 +1,63 @@
+.at-outercontainer {
+  display: flex;
+  font-family: "Poppins", sans-serif;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #010b1f;}
+
+.at-innercontainer {
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 30px;
+  width: 60%;
+  height: 50%;
+  margin: auto;
+  box-shadow: 0px 0px 10px #FFFF;
+    
+}
+
+.at-header{
+  border-top-left-radius: 30px;
+  border-top-right-radius: 30px;
+  padding: 10px;
+  background-color: #04194375;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.at-body{
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+.at-bd-title{
+  font-family: "Rubik Doodle Shadow", system-ui;
+  font-weight: 400;
+  text-align: center;
+}
+
+.input-container{
+    width: 20rem;
+
+}
+
+.rubik-doodle {
+  font-family: "Rubik Doodle Shadow", system-ui;
+  font-weight: 400;
+  font-style: normal;
+  font-size: clamp(2rem, -0.154rem + 4.615vw, 4rem);
+}
+
+
+@media (max-width: 862px) {
+  .at-innercontainer{
+    width:100%;
+    margin:10px
+  }
+  .at-innercontainer .at-body .MuiTextField-root {
+    width: 300px;
+  }
+}

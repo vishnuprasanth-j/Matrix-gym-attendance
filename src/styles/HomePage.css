@@ -28,6 +28,8 @@ height: 100vh;
 display: flex;
 flex-direction: column;
 justify-content: center;
+background-color: #010b1f;
+color: white;
 align-items: center;
 }
 
@@ -93,12 +95,15 @@ align-items: center;
 	border-color: rgb(255, 106, 0);
 	color: rgb(255, 106, 0);
 	fill: rgb(255, 106, 0);
+ background-color: #010b1f;
+	
   }
   
   .button-59:active {
 	border-color: rgb(255, 106, 0);
 	color: rgb(255, 106, 0);
 	fill: rgb(255, 106, 0);
+	background-color: #010b1f;
   }
   
   @media (min-width: 768px) {
