@@ -55,7 +55,7 @@ const LoginPage = () => {
         formData.password
       );
       if(formData.role=="trainer"){
-        navigate(`/Members/${formData.branch}`);
+        navigate(`/Members/${formData.branch}`,{ replace: true });
       }else{
         navigate(`/Dashboard`);
       }
@@ -131,8 +131,8 @@ const LoginPage = () => {
                   className="form-input"
                 >
                   <option value="">Select Branch</option>
-                  <option value="branch1">Branch 1</option>
-                  <option value="branch2">Branch 2</option>
+                  <option value="branch1">Branch 1(Jaycees)</option>
+                  <option value="branch2">Branch 2()</option>
                 </select>
               </div>
             )}

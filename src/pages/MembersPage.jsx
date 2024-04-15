@@ -1,4 +1,4 @@
-import'../styles/MembersPage.css';
+import "../styles/MembersPage.css";
 import { useContext, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -9,7 +9,7 @@ import {
   updateDoc,
   doc,
   Timestamp,
-  deleteDoc
+  deleteDoc,
 } from "firebase/firestore";
 import { db, SignOutUser } from "../lib/firebase"; // Assuming 'db' is your Firestore instance
 import {
@@ -30,10 +30,13 @@ import { AuthContext } from "../lib/AuthContext";
 import RenewMemberModal from "../components/RenewMemberModal";
 import UserInfoModal from "../components/UserInfoModal";
 import Sidebar from "../components/SideBar";
-import ConfirmModal from '../components/ConfirmModal';
+import ConfirmModal from "../components/ConfirmModal";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBars, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 const MembersPage = () => {
   const { branch } = useParams();
+  console.log(branch);
   const [members, setMembers] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sortedMembers, setSortedMembers] = useState([]);
@@ -120,8 +123,6 @@ const MembersPage = () => {
     setIsAddMemberModalOpen(false);
   };
 
-  
-
   const handleRenewButtonClick = (member) => {
     setSelectedMember(member);
     setIsRenewMemberModalOpen(true);
@@ -204,15 +205,20 @@ const MembersPage = () => {
 
   return (
     <div className="memberspage-container">
-     <Button onClick={handleSidebarOpen}>Open Sidebar</Button>
-      <Sidebar isOpen={isSidebarOpen} handleClose={handleSidebarClose} />
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleAddMemberButtonClick}
-      >
-        Add New Member
-      </Button>
+      <div className="memberspage-btn-container">
+        <Button onClick={handleSidebarOpen}>
+          <FontAwesomeIcon icon={faBars} />
+        </Button>
+        <Sidebar isOpen={isSidebarOpen} handleClose={handleSidebarClose} />
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleAddMemberButtonClick}
+        >
+          Add New Member
+        </Button>
+      </div>
+
       <TextField
         label="Search by Name"
         value={searchQuery}
@@ -223,12 +229,12 @@ const MembersPage = () => {
       />
       <TableContainer component={Paper}>
         <Table
-           sx={{
-          minWidth: 650,
-          "& > .MuiTableBody-root > .MuiTableRow-root:hover": {
-            backgroundColor: "#f0eeee"
-          }
-        }}
+          sx={{
+            minWidth: 650,
+            "& > .MuiTableBody-root > .MuiTableRow-root:hover": {
+              backgroundColor: "#f0eeee",
+            },
+          }}
         >
           <TableHead>
             <TableRow>
@@ -239,19 +245,21 @@ const MembersPage = () => {
               <TableCell>Weight</TableCell>
               <TableCell>Height</TableCell>
               <TableCell>Days Left</TableCell>
-              <TableCell align='center'>Actions</TableCell>
+              <TableCell align="center">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {sortedAndPaginatedMembers.map((member) => (
               <TableRow
                 key={member.id}
-               sx={{
+                sx={{
                   cursor: "pointer",
                 }}
                 className="bd"
               >
-                <TableCell onClick={() => handleRowClick(member)}>{member.name}</TableCell>
+                <TableCell onClick={() => handleRowClick(member)}>
+                  {member.name}
+                </TableCell>
                 <TableCell>{member.age}</TableCell>
                 <TableCell>{member.gender}</TableCell>
                 <TableCell>{member.phone}</TableCell>
@@ -262,9 +270,16 @@ const MembersPage = () => {
                   {daysLeft(member.currPlanStart?.toDate(), member.currentPlan)}
                 </TableCell>
 
-                <TableCell align='center'>
-                  <Button>Edit</Button>
-                 <Button onClick={() => handleDeleteButtonClick(member)}>Delete</Button>
+                <TableCell align="center">
+                  <Button>
+                    <FontAwesomeIcon icon={faPen} />
+                  </Button>
+                  <Button
+                    onClick={() => handleDeleteButtonClick(member)}
+                    color="error"
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </Button>
                   {isPlanExpired(
                     member.currPlanStart?.toDate() || "",
                     member.currentPlan
@@ -308,7 +323,7 @@ const MembersPage = () => {
         handleClose={() => setSelectedMemberInfo(null)}
         memberInfo={selectedMemberInfo}
       />
-      
+
       <ConfirmModal
         open={isDeleteModalOpen}
         onClose={handleCloseDeleteModal}

@@ -17,31 +17,32 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate()
  
   useEffect(() => {
-    const unsubscribe = userStateListener(async(user) => {
-      console.log("....sate")
-      if (user) {       
-        const role=await getRole(user.email)
-        setCurrentUser({...user,role:role})
-        setAuthPending(false)
+    const unsubscribe = userStateListener(async (user) => {
+      if (user) {
+        const { email } = user;
+        const { role, branch } = await getRoleAndBranch(email);
+        setCurrentUser({ ...user, role: role, branch: branch || "" });
+        setAuthPending(false);
       }
-
-    }); 
-    return unsubscribe
+    });
+    return unsubscribe;
   }, [setCurrentUser]);
-
-  const getRole=async(email)=>{
+  
+  const getRoleAndBranch = async (email) => {
     try {
       const querySnapshot = await getDocs(collection(db, "users"));
       const userData = querySnapshot.docs
         .map((doc) => doc.data())
         .find((data) => data.email === email);
-      return userData ? userData.role : null;
+      const role = userData ? userData.role : null;
+      const branch = userData ? userData.branch : null;
+      return { role, branch };
     } catch (error) {
-      console.error("Error getting user role:", error);
+      console.error("Error getting user role and branch:", error);
       throw error;
     }
-  }
-
+  };
+  
   const signOut = () => {
     SignOutUser()
     setCurrentUser(null)

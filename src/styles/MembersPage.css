@@ -1,3 +1,8 @@
 .memberspage-container{
     margin:50px;
 }
+.memberspage-btn-container{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}

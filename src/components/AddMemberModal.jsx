@@ -214,10 +214,10 @@ const AddMemberModal = ({ open, handleClose }) => {
                   fullWidth
                   required
                 >
-                  <MenuItem value="plan1">Plan 1</MenuItem>
-                  <MenuItem value="plan2">Plan 2</MenuItem>
-                  <MenuItem value="plan3">Plan 3</MenuItem>
-                  <MenuItem value="plan4">Plan 4</MenuItem>
+                  <MenuItem value="plan1">Plan 1 (1 month)</MenuItem>
+                  <MenuItem value="plan2">Plan 2 (4 month)</MenuItem>
+                  <MenuItem value="plan3">Plan 3 (6 month)</MenuItem>
+                  <MenuItem value="plan4">Plan 4 (12 month)</MenuItem>
                 </Select>
               </Grid>
               <Grid item xs={12} sm={6}>

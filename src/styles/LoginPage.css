@@ -1,36 +1,38 @@
 .login-container {
+    background-color: #0d2136;
     font-family: "Poppins", sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-  }
+}
+
   
-  .submit-button {
+.submit-button {
     width: 100%;
     padding: 10px;
     font-weight: 600;
-    background: linear-gradient(123deg, #71b8e7,#9b59b6);
+    background: linear-gradient(123deg, #0d2136, #a0dafd);
     color: black;
     font-family: "Poppins", sans-serif;
     border: none;
     border-radius: 3px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-  }
-  
+}
 
 
-.container{
+.container {
     max-width: 700px;
     width: 100%;
     background: #fff;
     padding: 25px 30px;
-    COLOR: black;
+    COLOR: #a0dafd;
     border-radius: 5px;
-    background-color: #04194375;
+    background-color: #06182a;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
+
 .container  .title{
      font-size: 25px;
     font-weight: 500; 
@@ -53,6 +55,7 @@
 form .user_details .input_pox{
     margin-bottom: 15px;
     margin: 20px 0 12px 0;
+    font-family: "Poppins", sans-serif;
     width: calc(100% / 2 - 20px);
 }
 .user_details .input_pox .datails{

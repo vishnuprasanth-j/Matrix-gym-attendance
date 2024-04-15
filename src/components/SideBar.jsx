@@ -78,6 +78,13 @@ const Sidebar = ({ isOpen, handleClose }) => {
           >
             <ListItemText primary="Enquiry" />
           </ListItemButton>
+          <ListItemButton
+            component={Link}
+            to={`/Absentee/${branch}`}
+            onClick={handleClose}
+          >
+            <ListItemText primary="Absentees" />
+          </ListItemButton>
           <ListItemButton onClick={handleSignOut}>
             <ListItemText primary="Logout" />
             <FontAwesomeIcon icon={faArrowRightFromBracket} />

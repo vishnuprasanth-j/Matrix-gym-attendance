@@ -9,9 +9,11 @@ import { AuthContext } from "./lib/AuthContext";
 import AttendancePage from "./pages/AttendancePage";
 import EnquiryPage from "./pages/EnquiryPage";
 import { CircularProgress } from "@mui/material";
+import AbsenteesPage from "./pages/AbsenteesPage";
 
 const AppRoutes = () => {
   const { currentUser,authPending } = useContext(AuthContext);
+  console.log(currentUser)
   // if (authPending) {
   //   return <CircularProgress sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }} />;
   // }
@@ -23,7 +25,7 @@ const AppRoutes = () => {
         element={
           currentUser != null ? (
             currentUser.role == "trainer" ? (
-              <Navigate to={`/Members/${currentUser.branch}`} />
+              <Navigate to={`/Members/${currentUser.branch}`} replace />
             ) : (
               <Navigate to="/Dashboard" />
             )
@@ -33,7 +35,7 @@ const AppRoutes = () => {
         }
       />
 
-      <Route path="/Members/:branch" element={<MembersPage />} />
+      <Route  path="/Members/:branch?"  element={<MembersPage />} />
 
       <Route
         path="/Dashboard"
@@ -42,6 +44,10 @@ const AppRoutes = () => {
       <Route
         path="/Enquiry/:branch"
         element={currentUser != null ? <EnquiryPage /> : <HomePage />}
+      />
+      <Route
+        path="/Absentee/:branch"
+        element={currentUser != null ? <AbsenteesPage /> : <HomePage />}
       />
       <Route path="/Attendance" element={<AttendancePage/>} />
       <Route path="*" element={<Navigate to="/" />} />

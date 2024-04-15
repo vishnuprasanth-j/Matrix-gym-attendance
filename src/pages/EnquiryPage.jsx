@@ -77,13 +77,16 @@ const EnquiryPage = () => {
 
   return (
     <div className="enquirypage-container">
-      <Button onClick={handleSidebarOpen}>
+    <div  className="enquirypage-btn-container">
+    <Button onClick={handleSidebarOpen}>
         <FontAwesomeIcon icon={faBars} />
       </Button>
       <Sidebar isOpen={isSidebarOpen} handleClose={handleSidebarClose} />
       <Button onClick={handleAddEnquiry} variant="contained" color="primary">
         Add Enquiry
       </Button>
+    </div>
+   
       <TableContainer component={Paper}>
         <Table
           sx={{
@@ -100,7 +103,7 @@ const EnquiryPage = () => {
               <TableCell>Address</TableCell>
               <TableCell>Date</TableCell>
               <TableCell>Phone</TableCell>
-              <TableCell align="center">Action</TableCell>
+              <TableCell align="center">Reminder</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
