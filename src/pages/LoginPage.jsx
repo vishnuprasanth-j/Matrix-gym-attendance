@@ -131,13 +131,14 @@ const LoginPage = () => {
                   className="form-input"
                 >
                   <option value="">Select Branch</option>
-                  <option value="branch1">Branch 1(Jaycees)</option>
-                  <option value="branch2">Branch 2()</option>
+                  <option value="branch1">Branch 1 (Jaycees)</option>
+                  <option value="branch2">Branch 2 (Kasipalayam)</option>
                 </select>
               </div>
             )}
           </div>
           {error && <p className="error-message">{error}</p>}
+          <br/>
           <button type="submit" className="submit-button">
             Login
           </button>

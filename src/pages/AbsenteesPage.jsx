@@ -93,7 +93,7 @@ const AbsenteesPage = () => {
                   }}
                 >
                   <Link
-                    to={`https://web.whatsapp.com/send?phone=+91${absentee.phone}&text=Hi%20this%20is%20matrix%20gym`}
+                    to={`https://wa.me/91${absentee.phone}?text=Hi%20this%20is%20matrix%20gym`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >

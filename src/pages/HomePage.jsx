@@ -7,6 +7,7 @@ import { collection,addDoc,Timestamp, getDocs, updateDoc } from 'firebase/firest
 import { useEffect } from "react";
 import { gsap } from "gsap";
 import MatrixAnimation from "../components/MatrixAnimation";
+import '../components/ReceiptDialog';
 
 const HomePage = () => {
   const updateAttendance = async () => {
@@ -49,7 +50,7 @@ const HomePage = () => {
           <button className='button-59'><Link to="/Login/dashboard">Dashboard</Link><FontAwesomeIcon icon={faChartSimple} /></button>
           <button className='button-59'><Link to="/Login/members">Members</Link> <FontAwesomeIcon icon={faPerson} /></button>
           <button className='button-59'><Link to="/Attendance">Attendance</Link><FontAwesomeIcon icon={faClipboardUser} /></button>
-          <button className='button-59' onClick={updateAttendance}>Click</button>
+          {/* <button className='button-59' onClick={updateAttendance}>Click</button> */}
         </div>
       </div>
     </main>

@@ -67,6 +67,7 @@ const AddMemberModal = ({ open, handleClose }) => {
         : "";
       let dummydt =new Date(memberData.currPlanStart) ;
       let currPlanStartTS = Timestamp.fromDate(dummydt);
+      let dobTS=Timestamp.fromDate(new Date(memberData.dob))
       let planEndTS;
       if (memberData.currentPlan === "plan1") {
         planEndTS = new Date(memberData.currPlanStart);
@@ -94,6 +95,7 @@ const AddMemberModal = ({ open, handleClose }) => {
         planHistory: plArray,
         memberSince: memberData.currPlanStart,
         currPlanStart: currPlanStartTS,
+        dob:dobTS
       };
       console.log(memberWithallFields);
       await addMemberToFirestore(memberWithallFields);

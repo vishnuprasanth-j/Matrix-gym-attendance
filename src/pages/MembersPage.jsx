@@ -1,6 +1,6 @@
 import "../styles/MembersPage.css";
-import { useContext, useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import {
   collection,
   getDocs,
@@ -11,7 +11,7 @@ import {
   Timestamp,
   deleteDoc,
 } from "firebase/firestore";
-import { db, SignOutUser } from "../lib/firebase"; // Assuming 'db' is your Firestore instance
+import { db} from "../lib/firebase"; // Assuming 'db' is your Firestore instance
 import {
   Button,
   TableContainer,
@@ -26,14 +26,14 @@ import {
 } from "@mui/material";
 import { differenceInDays, addMonths, formatDistanceToNow } from "date-fns";
 import AddMemberModal from "../components/AddMemberModal";
-import { AuthContext } from "../lib/AuthContext";
 import RenewMemberModal from "../components/RenewMemberModal";
 import UserInfoModal from "../components/UserInfoModal";
 import Sidebar from "../components/SideBar";
 import ConfirmModal from "../components/ConfirmModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
-
+import EditMemberModal from "../components/EditMemberModal";
+import ReceiptDialog from "../components/ReceiptDialog";
 const MembersPage = () => {
   const { branch } = useParams();
   console.log(branch);
@@ -48,6 +48,9 @@ const MembersPage = () => {
   const [selectedMember, setSelectedMember] = useState(null);
   const [selectedMemberInfo, setSelectedMemberInfo] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [editMemberData, setEditMemberData] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [showReceipt, setShowReceipt] = useState(false);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -76,6 +79,15 @@ const MembersPage = () => {
     );
     setSortedMembers(filteredMembers);
   }, [members, searchQuery]);
+
+  const handleDownloadReceipt = (member) => {
+    setShowReceipt(true);
+    setEditMemberData(member)
+  };
+
+  const handleCloseReceipt = () => {
+    setShowReceipt(false);
+  };
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -203,6 +215,44 @@ const MembersPage = () => {
     }
   };
 
+  const handleEditOpen = (member) => {
+    setEditMemberData(member);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditClose = () => {
+    setIsEditModalOpen(false);
+  };
+
+  const handleEditMember = async (editedMember) => {
+    console.log(editedMember);
+  
+    // Updating the local state
+    const updatedMembers = members.map(member => {
+      if (member.id === editedMember.id) {
+        return { ...member, ...editedMember };
+      }
+      return member;
+    });
+    setMembers(updatedMembers);
+    
+    try {
+      // Firestore document reference
+      const memberRef = doc(db, 'members', editedMember.id);
+  
+      // Update the document in Firestore
+      await updateDoc(memberRef, {
+        ...editedMember
+      });
+      
+      console.log("Document successfully updated!");
+      handleEditClose(); // Close modal and clean up any modal state after success
+    } catch (error) {
+      console.error("Error updating document: ", error);
+    }
+  };
+  
+
   return (
     <div className="memberspage-container">
       <div className="memberspage-btn-container">
@@ -271,7 +321,10 @@ const MembersPage = () => {
                 </TableCell>
 
                 <TableCell align="center">
-                  <Button>
+                  <Button onClick={() => handleDownloadReceipt(member)}>
+                    <FontAwesomeIcon icon={faPen} />
+                  </Button>
+                  <Button onClick={() => handleEditOpen(member)}>
                     <FontAwesomeIcon icon={faPen} />
                   </Button>
                   <Button
@@ -329,6 +382,17 @@ const MembersPage = () => {
         onClose={handleCloseDeleteModal}
         onConfirm={handleDeleteMember}
         message="Are you sure you want to delete this member?"
+      />
+        <EditMemberModal
+          open={isEditModalOpen}
+          handleClose={handleEditClose}
+          memberData={editMemberData}
+          handleEdit={handleEditMember}
+        />
+         <ReceiptDialog
+        open={showReceipt}
+        onClose={handleCloseReceipt}
+        memberData={editMemberData}
       />
     </div>
   );
