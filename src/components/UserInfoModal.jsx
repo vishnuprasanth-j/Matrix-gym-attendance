@@ -130,7 +130,7 @@ const UserInfoModal = ({ open, handleClose, memberInfo }) => {
                 )}
               </React.Fragment>
             ))}
-        </Grid>
+        </Grid>``
       </DialogContent>
     </Dialog>
   );
