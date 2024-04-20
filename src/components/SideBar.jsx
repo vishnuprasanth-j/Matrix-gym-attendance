@@ -2,11 +2,9 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   Drawer,
   List,
-  ListItem,
   ListItemText,
   ListItemButton,
   Backdrop,
-  Typography,
   IconButton,
 } from "@mui/material";
 import { SignOutUser } from "../lib/firebase";

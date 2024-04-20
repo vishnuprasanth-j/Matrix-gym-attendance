@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Dialog,
   DialogTitle,
@@ -6,19 +5,17 @@ import {
   DialogActions,
   Typography,
   Button,
-  Grid,
   Table,
   TableBody,
   TableCell,
   TableRow,
   TableContainer,
-  Paper,
 } from "@mui/material";
 import html2pdf from "html2pdf.js";
 
 const ReceiptDialog = ({ open, onClose, memberData }) => {
   if (!memberData) {
-    return null; // Return null for React components when there is nothing to render
+    return null;
   }
 
   const handleDownload = () => {
@@ -63,6 +60,14 @@ const ReceiptDialog = ({ open, onClose, memberData }) => {
                   {memberData.currentPlan === "plan2" ? "4 months" : ""}
                   {memberData.currentPlan === "plan3" ? "6 months" : ""}
                   {memberData.currentPlan === "plan4" ? "12 months" : ""}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Amount</TableCell>
+                <TableCell>{memberData.currentPlan === "plan1" ? "1200" : ""}
+                  {memberData.currentPlan === "plan2" ? "3000" : ""}
+                  {memberData.currentPlan === "plan3" ? "6000" : ""}
+                  {memberData.currentPlan === "plan4" ? "12000" : ""}
                 </TableCell>
               </TableRow>
             </TableBody>

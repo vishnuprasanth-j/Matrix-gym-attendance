@@ -10,10 +10,15 @@ import {
   Select,
   MenuItem,
   Typography,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
 } from "@mui/material";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCloudArrowUp, faPen } from "@fortawesome/free-solid-svg-icons";
 
 const convertTimestampToString = (timestamp) => {
-  if (!timestamp || typeof timestamp.seconds !== 'number') {
+  if (!timestamp || typeof timestamp.seconds !== "number") {
     return "";
   }
   const date = new Date(timestamp.seconds * 1000); // Convert seconds to milliseconds
@@ -22,6 +27,8 @@ const convertTimestampToString = (timestamp) => {
 
 const EditMemberModal = ({ open, handleClose, memberData, handleEdit }) => {
   const [formData, setFormData] = useState({
+    id:"",
+    photo:"",
     name: "",
     age: "",
     bloodgroup: "",
@@ -32,13 +39,17 @@ const EditMemberModal = ({ open, handleClose, memberData, handleEdit }) => {
     height: "",
     phone: "",
     weight: "",
-    currPlanStart:""
+    currPlanStart: "",
+    address: "",
   });
-
+  const [isHovered, setIsHovered] = useState(false);
+  const [photoName, setPhotoName] = useState("");
+  const [photoUrl, setPhotoUrl] = useState("");
   // Update formData whenever memberData changes
   useEffect(() => {
     if (memberData) {
       setFormData({
+        id:memberData.id || "",
         name: memberData.name || "",
         age: memberData.age || "",
         bloodgroup: memberData.bloodgroup || "",
@@ -49,20 +60,52 @@ const EditMemberModal = ({ open, handleClose, memberData, handleEdit }) => {
         height: memberData.height || "",
         phone: memberData.phone || "",
         weight: memberData.weight || "",
-        currPlanStart:convertTimestampToString(memberData?.currPlanStart || "")
+        currPlanStart: convertTimestampToString(
+          memberData?.currPlanStart || ""
+        ),
+        address: memberData.address || "",
+        photo: memberData.photo || "",
+        planHistory:memberData.planHistory || "",
+        memberSince: memberData.memberSince || ""
       });
+      setPhotoUrl(memberData.photo || "")
     }
   }, [memberData]);
+  
+  console.log(memberData)
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = () => {
-    handleEdit(formData);
+    handleEdit(formData,photoName);
     handleClose();
   };
+  const handlePhotoHover = (isHovered) => {
+    setIsHovered(isHovered);
+  };
 
+  const handlePhotoChange = (event) => {
+    const photoFile = event.target.files[0];
+    if (photoFile) {
+      setFormData((prevData) => ({
+        ...prevData,
+        photo:photoFile,
+      }));
+      setPhotoName(photoFile.name);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPhotoUrl(e.target.result)
+      };
+      reader.readAsDataURL(photoFile);
+    }
+  };
+  
+
+const handleEditPhoto=()=>{
+  document.getElementById("photoInput").click();
+}
   return (
     <Dialog open={open} onClose={handleClose}>
       <DialogTitle>
@@ -72,6 +115,48 @@ const EditMemberModal = ({ open, handleClose, memberData, handleEdit }) => {
       </DialogTitle>
       <DialogContent>
         <Grid container spacing={2} sx={{ marginTop: "10px" }}>
+          <Grid item xs={12} sx={{ display: "flex", justifyContent: "center" }}>
+            <div
+              style={{
+                position: "relative",
+                display: "inline-block",
+                textAlign: "center",
+              }}
+              onMouseEnter={() => handlePhotoHover(true)}
+              onMouseLeave={() => handlePhotoHover(false)}
+              onClick={handleEditPhoto}
+            >
+              <img
+                src={photoUrl}
+                alt="User"
+                style={{
+                  maxWidth: "200px",
+                  maxHeight: "200px",
+                  borderRadius: "40px",
+                }}
+              />
+              {isHovered && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    opacity:1,
+                  }}
+                >
+                  <FontAwesomeIcon icon={faPen}/>
+                </div>
+              )}
+            </div>
+            <input
+              id="photoInput"
+              type="file"
+              accept="image/jpeg"
+              hidden
+              onChange={handlePhotoChange}
+            />
+          </Grid>
           <Grid item xs={6}>
             <TextField
               label="Name"
@@ -92,21 +177,42 @@ const EditMemberModal = ({ open, handleClose, memberData, handleEdit }) => {
           </Grid>
           <Grid item xs={6}>
             <TextField
-              label="Blood Group"
-              name="bloodgroup"
-              value={formData.bloodgroup}
+              label="Address"
+              name="address"
+              value={formData.address}
               onChange={handleChange}
               fullWidth
             />
           </Grid>
           <Grid item xs={6}>
-            <TextField
+            <Select
+              label="Blood Group"
+              name="bloodgroup"
+              value={formData.bloodgroup}
+              onChange={handleChange}
+              fullWidth
+            >
+              <MenuItem value="A+">A+</MenuItem>
+              <MenuItem value="A-">A-</MenuItem>
+              <MenuItem value="B+">B+</MenuItem>
+              <MenuItem value="B-">B-</MenuItem>
+              <MenuItem value="AB+">AB+</MenuItem>
+              <MenuItem value="AB-">AB-</MenuItem>
+              <MenuItem value="O+">O+</MenuItem>
+              <MenuItem value="O-">O-</MenuItem>
+            </Select>
+          </Grid>
+          <Grid item xs={6}>
+            <Select
               label="Branch"
               name="branch"
               value={formData.branch}
               onChange={handleChange}
               fullWidth
-            />
+            >
+              <MenuItem value="branch1">Branch 1</MenuItem>
+              <MenuItem value="branch2">Branch 2</MenuItem>
+            </Select>
           </Grid>
           <Grid item xs={6}>
             <Select
@@ -143,13 +249,18 @@ const EditMemberModal = ({ open, handleClose, memberData, handleEdit }) => {
             />
           </Grid>
           <Grid item xs={6}>
-            <TextField
-              label="Gender"
+            <RadioGroup
               name="gender"
               value={formData.gender}
               onChange={handleChange}
-              fullWidth
-            />
+            >
+              <FormControlLabel
+                value="Female"
+                control={<Radio />}
+                label="Female"
+              />
+              <FormControlLabel value="Male" control={<Radio />} label="Male" />
+            </RadioGroup>
           </Grid>
           <Grid item xs={6}>
             <TextField

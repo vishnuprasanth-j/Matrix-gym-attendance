@@ -14,7 +14,7 @@ import {
   MenuItem,
   InputLabel,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { db, storage } from "../lib/firebase"; // Assuming 'db' is your Firestore instance
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -65,9 +65,9 @@ const AddMemberModal = ({ open, handleClose }) => {
       let photoUrl = memberData.photo
         ? await uploadPhoto(memberData.photo)
         : "";
-      let dummydt =new Date(memberData.currPlanStart) ;
+      let dummydt = new Date(memberData.currPlanStart);
       let currPlanStartTS = Timestamp.fromDate(dummydt);
-      let dobTS=Timestamp.fromDate(new Date(memberData.dob))
+      let dobTS = Timestamp.fromDate(new Date(memberData.dob));
       let planEndTS;
       if (memberData.currentPlan === "plan1") {
         planEndTS = new Date(memberData.currPlanStart);
@@ -83,7 +83,8 @@ const AddMemberModal = ({ open, handleClose }) => {
         planEndTS.setMonth(planEndTS.getMonth() + 12);
       }
 
-      let plArray = [].push({
+      let plArray = [];
+      plArray.push({
         plan: memberData.currentPlan,
         planStart: currPlanStartTS,
         planEnd: Timestamp.fromDate(planEndTS),
@@ -93,9 +94,9 @@ const AddMemberModal = ({ open, handleClose }) => {
         photo: photoUrl,
         branch: branch,
         planHistory: plArray,
-        memberSince: memberData.currPlanStart,
+        memberSince: currPlanStartTS,
         currPlanStart: currPlanStartTS,
-        dob:dobTS
+        dob: dobTS,
       };
       console.log(memberWithallFields);
       await addMemberToFirestore(memberWithallFields);
@@ -108,7 +109,6 @@ const AddMemberModal = ({ open, handleClose }) => {
 
   const uploadPhoto = async (photoFile) => {
     const storageRef = ref(storage, `files/${photoFile.name}`);
-    console.log(storageRef);
     const uploadTask = await uploadBytes(storageRef, photoFile);
     const downloadurl = await getDownloadURL(storageRef);
     return downloadurl;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Button,
   TableContainer,
@@ -13,7 +13,7 @@ import Sidebar from "../components/SideBar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faBell } from "@fortawesome/free-solid-svg-icons";
 import { addDoc, collection, getDocs } from "firebase/firestore";
-import { db } from "../lib/firebase"; // Assuming 'db' is your Firestore instance
+import { db } from "../lib/firebase";
 import "../styles/EnquiryPage.css";
 import AddEnquiryModal from "../components/AddEnquiryModal";
 import { Link } from "react-router-dom";
@@ -77,16 +77,16 @@ const EnquiryPage = () => {
 
   return (
     <div className="enquirypage-container">
-    <div  className="enquirypage-btn-container">
-    <Button onClick={handleSidebarOpen}>
-        <FontAwesomeIcon icon={faBars} />
-      </Button>
-      <Sidebar isOpen={isSidebarOpen} handleClose={handleSidebarClose} />
-      <Button onClick={handleAddEnquiry} variant="contained" color="primary">
-        Add Enquiry
-      </Button>
-    </div>
-   
+      <div className="enquirypage-btn-container">
+        <Button onClick={handleSidebarOpen}>
+          <FontAwesomeIcon icon={faBars} />
+        </Button>
+        <Sidebar isOpen={isSidebarOpen} handleClose={handleSidebarClose} />
+        <Button onClick={handleAddEnquiry} variant="contained" color="primary">
+          Add Enquiry
+        </Button>
+      </div>
+
       <TableContainer component={Paper}>
         <Table
           sx={{
@@ -120,7 +120,7 @@ const EnquiryPage = () => {
                   }}
                 >
                   <Link
-                    to={`https://wa.me/91${enquiry.phone}?text=Hi%20this%20is%20matrix%20gym`}
+                    to={`https://wa.me/91${enquiry.phone}?text=Hi%20this%20is%20Matrix%20Gym.%20Thanks%20for%20reaching%20out!%20We're%20excited%20to%20have%20you%20join%20our%20community%20–%20let's%20smash%20those%20fitness%20goals%20together!%20Feel%20free%20to%20contact%20us%20if%20you%20have%20any%20questions.`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >

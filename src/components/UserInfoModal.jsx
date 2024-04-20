@@ -3,10 +3,13 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
-  Button,
   Typography,
   Grid,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
@@ -24,6 +27,7 @@ const UserInfoModal = ({ open, handleClose, memberInfo }) => {
     "branch",
     "currPlanStart",
     "dob",
+    "planHistory",
   ];
 
   const labels = {
@@ -37,13 +41,13 @@ const UserInfoModal = ({ open, handleClose, memberInfo }) => {
     branch: "Branch",
     currPlanStart: "Plan Start",
     dob: "DOB",
-    address:"Address"
+    address: "Address",
+    planHistory: "Plan History",
   };
-  
+
   const formatLabel = (key) => {
     return labels[key] || key;
   };
-
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth={true}>
@@ -75,22 +79,55 @@ const UserInfoModal = ({ open, handleClose, memberInfo }) => {
           {memberInfo &&
             orderedKeys.map((key, index) => (
               <React.Fragment key={index}>
-                <Grid item xs={6} sm={3} sx={{ paddingLeft: "30px" }}>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ fontWeight: "bold"}}
-                  >
-                    {formatLabel(key)}:
-                  </Typography>
-                </Grid>
-                <Grid item xs={6} sm={9}>
-                  {/* Check if key is currPlanStart or dob, if yes, convert to date format */}
-                  <Typography variant="body2" sx={{ marginLeft: "10px" }}>
-                    {key === "currPlanStart"
-                      ? memberInfo[key].toDate().toDateString()
-                      : memberInfo[key]}
-                  </Typography>
-                </Grid>
+                {key === "planHistory" ? (
+                  <Grid item xs={12}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ fontWeight: "bold", marginBottom: 1 }}
+                    >
+                      {formatLabel(key)}:
+                    </Typography>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>S.No.</TableCell>
+                          <TableCell>Plan</TableCell>
+                          <TableCell>Plan Start</TableCell>
+                          <TableCell>Plan End</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {memberInfo[key].map((plan, index) => (
+                          <TableRow key={index}>
+                            <TableCell>{index + 1}</TableCell>
+                            <TableCell>{plan.plan}</TableCell>
+                            <TableCell>
+                              {plan.planStart.toDate().toDateString()}
+                            </TableCell>
+                            <TableCell>
+                              {plan.planEnd.toDate().toDateString()}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </Grid>
+                ) : (
+                  <React.Fragment>
+                    <Grid item xs={6} sm={3} sx={{ paddingLeft: "30px" }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
+                        {formatLabel(key)}:
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6} sm={9}>
+                      <Typography variant="body2" sx={{ marginLeft: "10px" }}>
+                        {key === "currPlanStart" || key === "dob"
+                          ? memberInfo[key].toDate().toDateString()
+                          : memberInfo[key]}
+                      </Typography>
+                    </Grid>
+                  </React.Fragment>
+                )}
               </React.Fragment>
             ))}
         </Grid>

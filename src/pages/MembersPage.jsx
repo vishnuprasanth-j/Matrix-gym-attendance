@@ -9,9 +9,9 @@ import {
   updateDoc,
   doc,
   Timestamp,
-  deleteDoc,
+  deleteDoc
 } from "firebase/firestore";
-import { db} from "../lib/firebase"; // Assuming 'db' is your Firestore instance
+import { db, storage} from "../lib/firebase"; // Assuming 'db' is your Firestore instance
 import {
   Button,
   TableContainer,
@@ -33,7 +33,7 @@ import ConfirmModal from "../components/ConfirmModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import EditMemberModal from "../components/EditMemberModal";
-import ReceiptDialog from "../components/ReceiptDialog";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 const MembersPage = () => {
   const { branch } = useParams();
   console.log(branch);
@@ -50,7 +50,7 @@ const MembersPage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editMemberData, setEditMemberData] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [showReceipt, setShowReceipt] = useState(false);
+
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -80,16 +80,7 @@ const MembersPage = () => {
     setSortedMembers(filteredMembers);
   }, [members, searchQuery]);
 
-  const handleDownloadReceipt = (member) => {
-    setShowReceipt(true);
-    setEditMemberData(member)
-  };
-
-  const handleCloseReceipt = () => {
-    setShowReceipt(false);
-  };
-
-  const handleSearchChange = (event) => {
+   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
   };
 
@@ -105,8 +96,9 @@ const MembersPage = () => {
   const calculateCurrPlanEnd = (currPlanStart, currentPlan) => {
     const planLengths = {
       plan1: 1, // Duration of plan1 in months
-      plan2: 6, // Duration of plan2 in months
-      plan3: 12, // Duration of plan3 in months
+      plan2: 4, // Duration of plan2 in months
+      plan3: 6, // Duration of plan3 in months
+      plan4: 12 // Duration of plan4 in months
     };
     const planDurationMonths = planLengths[currentPlan] || 0;
     if (!planDurationMonths) return null;
@@ -150,12 +142,44 @@ const MembersPage = () => {
       if (!selectedMember) return;
 
       const memberRef = doc(db, "members", selectedMember.id);
+     
+      let planEndTS;
+      const currPlanStartDt = new Date(); 
+      switch (newPlan) {
+          case "plan1":
+              planEndTS = new Date(currPlanStartDt);
+              planEndTS.setMonth(planEndTS.getMonth() + 1);
+              break;
+          case "plan2":
+              planEndTS = new Date(currPlanStartDt);
+              planEndTS.setMonth(planEndTS.getMonth() + 4);
+              break;
+          case "plan3":
+              planEndTS = new Date(currPlanStartDt);
+              planEndTS.setMonth(planEndTS.getMonth() + 6);
+              break;
+          case "plan4":
+              planEndTS = new Date(currPlanStartDt);
+              planEndTS.setMonth(planEndTS.getMonth() + 12);
+              break;
+          default:
+              throw new Error("Unknown plan code: " + newPlan);
+      }
+
+      planEndTS = Timestamp.fromDate(planEndTS);
+  
+      let updatedplanHistory={
+        plan:newPlan,
+        planStart:Timestamp.now(),
+        planEnd:planEndTS
+      }
+     
       await updateDoc(memberRef, {
         currentPlan: newPlan,
         currPlanStart: Timestamp.now(),
         planHistory: [
           ...selectedMember.planHistory,
-          selectedMember.currentPlan,
+          updatedplanHistory
         ],
       });
 
@@ -223,30 +247,73 @@ const MembersPage = () => {
   const handleEditClose = () => {
     setIsEditModalOpen(false);
   };
-
-  const handleEditMember = async (editedMember) => {
-    console.log(editedMember);
+  const isTimestamp = (value) => {
+    return value instanceof Timestamp;
+  };
   
-    // Updating the local state
-    const updatedMembers = members.map(member => {
-      if (member.id === editedMember.id) {
-        return { ...member, ...editedMember };
-      }
-      return member;
-    });
-    setMembers(updatedMembers);
-    
+  const handleEditMember = async (editedMember, photoName) => {
     try {
-      // Firestore document reference
-      const memberRef = doc(db, 'members', editedMember.id);
+      let currPlanStartTimestamp = editedMember.currPlanStart;
+      let dobTimestamp = editedMember.dob;
   
-      // Update the document in Firestore
-      await updateDoc(memberRef, {
-        ...editedMember
-      });
+      if (!isTimestamp(currPlanStartTimestamp)) {
+        currPlanStartTimestamp = Timestamp.fromDate(new Date(editedMember.currPlanStart));
+      }
+      if (!isTimestamp(dobTimestamp)) {
+        dobTimestamp = Timestamp.fromDate(new Date(editedMember.dob));
+      }
+  
+      let planEndTS;
+      switch (editedMember.currentPlan) {
+          case "plan1":
+              planEndTS = new Date(editedMember.currPlanStart);
+              planEndTS.setMonth(planEndTS.getMonth() + 1);
+              break;
+          case "plan2":
+              planEndTS = new Date(editedMember.currPlanStart);
+              planEndTS.setMonth(planEndTS.getMonth() + 4);
+              break;
+          case "plan3":
+              planEndTS = new Date(editedMember.currPlanStart);
+              planEndTS.setMonth(planEndTS.getMonth() + 6);
+              break;
+          case "plan4":
+              planEndTS = new Date(editedMember.currPlanStart);
+              planEndTS.setMonth(planEndTS.getMonth() + 12);
+              break;
+          default:
+              throw new Error("Unknown plan code: " + editedMember.currentPlan);
+      }
+
+      planEndTS = Timestamp.fromDate(planEndTS);
+  
+      if (photoName) {
+        const storageRef = ref(storage, `files/${photoName}`);
+        await uploadBytes(storageRef, editedMember.photo);
+        const newPhotoURL = await getDownloadURL(storageRef);
+  
+     
+        editedMember.photo = newPhotoURL;
+      }
       
+      let editedPlanHistory = Array.isArray(editedMember.planHistory) ? [...editedMember.planHistory] : [];
+      const lastPlan = editedPlanHistory.length > 0 ? editedPlanHistory[editedPlanHistory.length - 1] : null;
+      lastPlan.planStart = currPlanStartTimestamp;
+      lastPlan.plan = editedMember.currentPlan;
+      lastPlan.planEnd = planEndTS;
+      
+      const memberRef = doc(db, "members", editedMember.id);
+
+      await updateDoc(memberRef, {
+        ...editedMember, 
+        currPlanStart: currPlanStartTimestamp,
+        dob: dobTimestamp,
+        planHistory:editedPlanHistory
+      });
+  
       console.log("Document successfully updated!");
-      handleEditClose(); // Close modal and clean up any modal state after success
+  
+      handleEditClose();
     } catch (error) {
       console.error("Error updating document: ", error);
     }
@@ -321,9 +388,6 @@ const MembersPage = () => {
                 </TableCell>
 
                 <TableCell align="center">
-                  <Button onClick={() => handleDownloadReceipt(member)}>
-                    <FontAwesomeIcon icon={faPen} />
-                  </Button>
                   <Button onClick={() => handleEditOpen(member)}>
                     <FontAwesomeIcon icon={faPen} />
                   </Button>
@@ -389,12 +453,7 @@ const MembersPage = () => {
           memberData={editMemberData}
           handleEdit={handleEditMember}
         />
-         <ReceiptDialog
-        open={showReceipt}
-        onClose={handleCloseReceipt}
-        memberData={editMemberData}
-      />
-    </div>
+     </div>
   );
 };
 

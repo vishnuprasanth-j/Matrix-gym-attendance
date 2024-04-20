@@ -1,59 +1,30 @@
 import { Link } from "react-router-dom";
 import '../styles/HomePage.css';
-import { faChartSimple,faClipboardUser,faDumbbell,faPerson } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { auth, db } from '../lib/firebase';
-import { collection,addDoc,Timestamp, getDocs, updateDoc } from 'firebase/firestore';
-import { useEffect } from "react";
-import { gsap } from "gsap";
-import MatrixAnimation from "../components/MatrixAnimation";
-import '../components/ReceiptDialog';
 
 const HomePage = () => {
-  const updateAttendance = async () => {
-    // Query all documents from the 'members' collection
-    const membersQuerySnapshot = await getDocs(collection(db, 'members'));
-  
-    // Get the current date
-    const currentDate = new Date();
-  
-    // Generate random dates for the last two months
-    const randomDates = [];
-    for (let i = 0; i < 60; i++) {
-      const randomDate = new Date(currentDate);
-      randomDate.setDate(randomDate.getDate() - Math.floor(Math.random() * 60));
-      randomDates.push(randomDate);
-    }
-  
-    // Update each document in the collection with the new 'attendance' field
-    membersQuerySnapshot.forEach(async (doc) => {
-      try {
-        const memberId = doc.id;
-        const attendanceData = {
-          attendance: randomDates.filter(date => date < currentDate)
-                                  .map(date => date.toISOString()), // Convert dates to ISO string format
-        };
-        await updateDoc(doc.ref, attendanceData);
-        console.log(`Attendance updated for member with ID: ${memberId}`);
-      } catch (error) {
-        console.error(`Error updating attendance for member with ID: W`, error);
-      }
-    });
-  };
   
   return (
-    <main className='main-div'>
-    <MatrixAnimation></MatrixAnimation>
-      <div className='home-container'>
-        <div className='rubik-doodle'>Matr<FontAwesomeIcon icon={faDumbbell}/>x Gym</div>
-        <div className='buttons-div'>
-          <button className='button-59'><Link to="/Login/dashboard">Dashboard</Link><FontAwesomeIcon icon={faChartSimple} /></button>
-          <button className='button-59'><Link to="/Login/members">Members</Link> <FontAwesomeIcon icon={faPerson} /></button>
-          <button className='button-59'><Link to="/Attendance">Attendance</Link><FontAwesomeIcon icon={faClipboardUser} /></button>
-          {/* <button className='button-59' onClick={updateAttendance}>Click</button> */}
+    <>
+    <h1>Matrix <span id="header-span">Fitness </span>Center</h1>
+    <div className="background-image"></div>
+    <div className="container-home">
+        <div className="button-container">
+          <div className="button-wrapper">
+          <Link to="/Login/dashboard"><button id="dashboard-btn" className="glass-button"></button></Link>
+            <p>Dashboard</p>
+          </div>
+          <div className="button-wrapper">
+          <Link to="/Login/members"><button id="members-btn" className="glass-button"></button></Link> 
+            <p>Members</p>
+          </div>
+          <div className="button-wrapper">
+          <Link to="/Attendance"><button id="attendance-btn" className="glass-button"></button></Link>
+            <p>Attendance</p>
+          </div>
+         
         </div>
       </div>
-    </main>
+  </>
   );
 };
 
