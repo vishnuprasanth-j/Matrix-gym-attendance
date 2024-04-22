@@ -313,7 +313,7 @@ const MembersPage = () => {
   
       console.log("Document successfully updated!");
   
-      handleEditClose();
+
     } catch (error) {
       console.error("Error updating document: ", error);
     }

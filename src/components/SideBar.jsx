@@ -43,10 +43,10 @@ const Sidebar = ({ isOpen, handleClose }) => {
         open={isOpen}
         onClose={handleClose}
         sx={{
-          width: 250, // Set the desired width here
+          width: 250, 
           flexShrink: 0,
           "& .MuiDrawer-paper": {
-            width: 250, // Set the same width as above for the paper
+            width: 250, 
           },
         }}
       >

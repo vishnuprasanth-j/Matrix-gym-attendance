@@ -26,6 +26,7 @@ import ReceiptDialog from "./ReceiptDialog";
 const AddMemberModal = ({ open, handleClose }) => {
   const { branch } = useParams();
   const [memberData, setMemberData] = useState({
+    regno:"",
     name: "",
     age: "",
     bloodgroup: "",
@@ -133,6 +134,16 @@ const AddMemberModal = ({ open, handleClose }) => {
         {!successMessage && (
           <form onSubmit={handleSubmit}>
             <Grid container spacing={2} sx={{ marginTop: "10px" }}>
+            <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Registration No."
+                  name="regno"
+                  value={memberData.regno}
+                  onChange={handleChange}
+                  fullWidth
+                  required
+                />
+              </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
                   label="Full Name"

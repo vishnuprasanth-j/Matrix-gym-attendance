@@ -56,7 +56,8 @@ const ReceiptDialog = ({ open, onClose, memberData }) => {
               </TableRow>
               <TableRow>
                 <TableCell>Plan:</TableCell>
-                <TableCell>{memberData.currentPlan === "plan1" ? "1 month" : ""}
+                <TableCell>
+                  {memberData.currentPlan === "plan1" ? "1 month" : ""}
                   {memberData.currentPlan === "plan2" ? "4 months" : ""}
                   {memberData.currentPlan === "plan3" ? "6 months" : ""}
                   {memberData.currentPlan === "plan4" ? "12 months" : ""}
@@ -64,16 +65,22 @@ const ReceiptDialog = ({ open, onClose, memberData }) => {
               </TableRow>
               <TableRow>
                 <TableCell>Amount</TableCell>
-                <TableCell>{memberData.currentPlan === "plan1" ? "1200" : ""}
-                  {memberData.currentPlan === "plan2" ? "3000" : ""}
-                  {memberData.currentPlan === "plan3" ? "6000" : ""}
-                  {memberData.currentPlan === "plan4" ? "12000" : ""}
+                <TableCell>
+                  {memberData.currentPlan === "plan1" ? "₹1200" : ""}
+                  {memberData.currentPlan === "plan2" ? "₹3000" : ""}
+                  {memberData.currentPlan === "plan3" ? "₹6000" : ""}
+                  {memberData.currentPlan === "plan4" ? "₹12000" : ""}
                 </TableCell>
               </TableRow>
+              {/* <TableRow>
+                <TableCell>Plan End</TableCell>
+                <TableCell>
+                  {memberData.planHistory[planHistory.length-1].planEnd}
+                </TableCell>
+              </TableRow> */}
             </TableBody>
           </Table>
         </TableContainer>
-        {/* Additional centered content here */}
       </DialogContent>
       <DialogActions sx={{ justifyContent: 'center' }}>
         <Button onClick={onClose}>Close</Button>

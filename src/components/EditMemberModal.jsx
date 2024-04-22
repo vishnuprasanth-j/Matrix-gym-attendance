@@ -13,9 +13,10 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  CircularProgress
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCloudArrowUp, faPen } from "@fortawesome/free-solid-svg-icons";
+import { faPen } from "@fortawesome/free-solid-svg-icons";
 
 const convertTimestampToString = (timestamp) => {
   if (!timestamp || typeof timestamp.seconds !== "number") {
@@ -26,7 +27,9 @@ const convertTimestampToString = (timestamp) => {
 };
 
 const EditMemberModal = ({ open, handleClose, memberData, handleEdit }) => {
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
+    regno:"",
     id:"",
     photo:"",
     name: "",
@@ -49,6 +52,7 @@ const EditMemberModal = ({ open, handleClose, memberData, handleEdit }) => {
   useEffect(() => {
     if (memberData) {
       setFormData({
+        regno:memberData.regno|| "",
         id:memberData.id || "",
         name: memberData.name || "",
         age: memberData.age || "",
@@ -78,10 +82,17 @@ const EditMemberModal = ({ open, handleClose, memberData, handleEdit }) => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = () => {
-    handleEdit(formData,photoName);
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    try {
+      await handleEdit(formData);
+    } catch (error) {
+      console.error("An error occurred during the update:", error);
+    }
+    setIsLoading(false);
     handleClose();
   };
+
   const handlePhotoHover = (isHovered) => {
     setIsHovered(isHovered);
   };
@@ -155,6 +166,15 @@ const handleEditPhoto=()=>{
               accept="image/jpeg"
               hidden
               onChange={handlePhotoChange}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              label="Registration No."
+              name="regno"
+              value={formData.regno}
+              onChange={handleChange}
+              fullWidth
             />
           </Grid>
           <Grid item xs={6}>
@@ -292,10 +312,15 @@ const handleEditPhoto=()=>{
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleSubmit} variant="contained" color="primary">
-          Submit
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          color="primary"
+          disabled={isLoading}
+        >
+          {isLoading ? <CircularProgress size={24} /> : "Submit"}
         </Button>
-        <Button onClick={handleClose} variant="outlined" color="secondary">
+        <Button onClick={handleClose} variant="outlined" color="secondary" disabled={isLoading}>
           Cancel
         </Button>
       </DialogActions>

@@ -16,6 +16,7 @@ import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
 const UserInfoModal = ({ open, handleClose, memberInfo }) => {
   const orderedKeys = [
+    "regno",
     "name",
     "age",
     "gender",
@@ -31,6 +32,7 @@ const UserInfoModal = ({ open, handleClose, memberInfo }) => {
   ];
 
   const labels = {
+    regno: "Registraton No",
     name: "Name",
     age: "Age",
     gender: "Gender",
@@ -48,6 +50,21 @@ const UserInfoModal = ({ open, handleClose, memberInfo }) => {
   const formatLabel = (key) => {
     return labels[key] || key;
   };
+
+  const branchLabels = {
+    branch1: "Jaycees Branch",
+    branch2: "Kasipalayam Branch",
+  };
+
+  const planLabels = {
+    plan1: "Plan 1 (1 month)",
+    plan2: "Plan 2 (4 months)",
+    plan3: "Plan 3 (6 months)",
+    plan4: "Plan 4 (12 months)",
+  };
+
+  const getBranchLabel = (branch) => branchLabels[branch] || branch;
+  const getPlanLabel = (plan) => planLabels[plan] || plan;
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth={true}>
@@ -102,10 +119,10 @@ const UserInfoModal = ({ open, handleClose, memberInfo }) => {
                             <TableCell>{index + 1}</TableCell>
                             <TableCell>{plan.plan}</TableCell>
                             <TableCell>
-                              {plan.planStart.toDate().toDateString()}
+                              {plan.planStart.toDate().toLocaleDateString()}
                             </TableCell>
                             <TableCell>
-                              {plan.planEnd.toDate().toDateString()}
+                              {plan.planEnd.toDate().toLocaleDateString()}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -115,14 +132,21 @@ const UserInfoModal = ({ open, handleClose, memberInfo }) => {
                 ) : (
                   <React.Fragment>
                     <Grid item xs={6} sm={3} sx={{ paddingLeft: "30px" }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{ fontWeight: "bold" }}
+                      >
                         {formatLabel(key)}:
                       </Typography>
                     </Grid>
                     <Grid item xs={6} sm={9}>
                       <Typography variant="body2" sx={{ marginLeft: "10px" }}>
-                        {key === "currPlanStart" || key === "dob"
-                          ? memberInfo[key].toDate().toDateString()
+                        {key === "branch"
+                          ? getBranchLabel(memberInfo[key])
+                          : key === "currentPlan"
+                          ? getPlanLabel(memberInfo[key])
+                          : key === "currPlanStart" || key === "dob"
+                          ? memberInfo[key].toDate().toLocaleDateString()
                           : memberInfo[key]}
                       </Typography>
                     </Grid>
@@ -130,7 +154,8 @@ const UserInfoModal = ({ open, handleClose, memberInfo }) => {
                 )}
               </React.Fragment>
             ))}
-        </Grid>``
+        </Grid>
+        ``
       </DialogContent>
     </Dialog>
   );

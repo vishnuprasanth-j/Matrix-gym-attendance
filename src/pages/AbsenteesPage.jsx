@@ -36,7 +36,6 @@ const AbsenteesPage = () => {
         const absenteesData = [];
         querySnapshot.forEach((doc) => {
           const member = doc.data();
-          // Check if the attendance array contains yesterday's date or today's date
           const today = new Date();
           const todayDateString = today.toISOString().split("T")[0];
           const yesterday = new Date();

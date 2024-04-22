@@ -6,7 +6,11 @@ import { AuthContext } from "../lib/AuthContext";
 import { SignOutUser, db } from "../lib/firebase";
 import { Button, Grid } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowRightFromBracket,
+  faBars,
+} from "@fortawesome/free-solid-svg-icons";
+import Sidebar from "../components/SideBar";
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -19,6 +23,7 @@ const DashboardPage = () => {
   const statusChartRef = useRef(null);
   const genderChartInstance = useRef(null);
   const statusChartInstance = useRef(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,7 +46,7 @@ const DashboardPage = () => {
             plan1: 1,
             plan2: 4,
             plan3: 6,
-            plan4: 12
+            plan4: 12,
           };
 
           const expirationDate = new Date(currPlanStart.toDate());
@@ -85,13 +90,13 @@ const DashboardPage = () => {
           datasets: [
             {
               data: [maleCount, femaleCount],
-              backgroundColor: ["blue", "pink"]
-            }
-          ]
+              backgroundColor: ["blue", "pink"],
+            },
+          ],
         },
         options: {
-          responsive: true
-        }
+          responsive: true,
+        },
       });
 
       const statusChartCanvas = statusChartRef.current;
@@ -102,13 +107,13 @@ const DashboardPage = () => {
           datasets: [
             {
               data: [activeCount, expiredCount],
-              backgroundColor: ["green", "red"]
-            }
-          ]
+              backgroundColor: ["green", "red"],
+            },
+          ],
         },
         options: {
-          responsive: true
-        }
+          responsive: true,
+        },
       });
     }
   }, [maleCount, femaleCount, activeCount, expiredCount]);
@@ -122,22 +127,33 @@ const DashboardPage = () => {
       console.error("Error signing out:", error);
     }
   };
+  const handleSidebarOpen = () => {
+    setIsSidebarOpen(true);
+  };
+
+  const handleSidebarClose = () => {
+    setIsSidebarOpen(false);
+  };
 
   return (
     <div className="dbpage-container">
+      <Button onClick={handleSidebarOpen}>
+        <FontAwesomeIcon icon={faBars} />
+      </Button>
+      <Sidebar isOpen={isSidebarOpen} handleClose={handleSidebarClose} />
       <Button onClick={handleSignOut}>
         Logout
         <FontAwesomeIcon icon={faArrowRightFromBracket} />
       </Button>
-      <Grid container spacing={3}>
-  <Grid item xs={12} sm={4} style={{ width: "100%", height: "300px" }} >
-    <canvas ref={genderChartRef} ></canvas>
-  </Grid>
-  <Grid item xs={12} sm={4} style={{ width: "100%", height: "300px" }}>
-    <canvas ref={statusChartRef} ></canvas>
-  </Grid>
-</Grid>
-
+      {/* <Grid container spacing={3}>
+        <Grid item xs={12} sm={4} style={{ width: "100%", height: "300px" }}>
+          <canvas ref={genderChartRef}></canvas>
+        </Grid>
+        <Grid item xs={12} sm={4} style={{ width: "100%", height: "300px" }}>
+          <canvas ref={statusChartRef}></canvas>
+        </Grid>
+      </Grid> */}
+      
     </div>
   );
 };
