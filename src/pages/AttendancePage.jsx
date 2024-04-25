@@ -1,4 +1,13 @@
-import { Alert, Button, TextField } from "@mui/material";
+import {
+  Alert,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  TextField,
+} from "@mui/material";
 import "../styles/AttendancePage.css";
 import { useState } from "react";
 import {
@@ -18,6 +27,8 @@ const AttendancePage = () => {
   const [memberDetails, setMemberDetails] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [openDialog, setOpenDialog] = useState(false);
+  const [memberDoc, setMemberDoc] = useState();
 
   const handleRegNumberChange = (event) => {
     setRegNumber(event.target.value);
@@ -44,34 +55,29 @@ const AttendancePage = () => {
         setErrorMessage("Member not found");
         setTimeout(() => {
           setErrorMessage("");
-        }, 2000);
+        }, 4000);
         return;
       }
       const memberDoc = membersQuerySnapshot.docs[0];
 
-      const today = new Date().toLocaleDateString();
-      const attendanceArray = memberDoc.data().attendance || [];
-      if (attendanceArray.includes(today)) {
-        setErrorMessage("Attendance already marked for today");
-      } else {
-        await updateDoc(memberDoc.ref, { attendance: arrayUnion(today) });
-        setSuccessMessage("Attendance added successfully");
-      }
-
       const planHistory = memberDoc.data().planHistory;
       const currPlanStart = planHistory[planHistory.length - 1].planStart;
       const currPlanEnd = planHistory[planHistory.length - 1].planEnd;
-
+      // await updateDoc(memberDoc.ref, { attendance: arrayUnion(today) });
+      // setSuccessMessage("Attendance added successfully");
+      setMemberDoc(memberDoc);
       setMemberDetails({
         name: memberDoc.data().name,
         planExpiryDate: currPlanEnd.toDate().toLocaleDateString(),
         daysLeft: calculateDaysLeft(currPlanEnd, currPlanStart),
+        batch: memberDoc.data().batch,
       });
+      setOpenDialog(true);
 
       setTimeout(() => {
         setSuccessMessage("");
         setErrorMessage("");
-      }, 2000);
+      }, 4000);
     } catch (error) {
       console.error("Error marking attendance:", error);
       setErrorMessage("Error marking attendance");
@@ -79,7 +85,32 @@ const AttendancePage = () => {
       setTimeout(() => {
         setSuccessMessage("");
         setErrorMessage("");
-      }, 2000);
+      }, 4000);
+    }
+  };
+  const handleMarkAttendance = async () => {
+    try {
+      const today = new Date().toLocaleDateString();
+      const attendanceArray = memberDoc.data().attendance || [];
+      if (attendanceArray.includes(today)) {
+        setErrorMessage("Attendance already marked for today");
+      }else{
+        await updateDoc(memberDoc.ref, { attendance: arrayUnion(today) });
+        setSuccessMessage("Attendance marked successfully");
+        setOpenDialog(false);
+      }
+      setTimeout(() => {
+        setSuccessMessage("");
+        setErrorMessage("");
+      }, 4000);
+    } catch (error) {
+      console.error("Error marking attendance:", error);
+      setErrorMessage("Error marking attendance");
+
+      setTimeout(() => {
+        setSuccessMessage("");
+        setErrorMessage("");
+      }, 4000);
     }
   };
 
@@ -133,11 +164,32 @@ const AttendancePage = () => {
                 Enter
               </button>
               {memberDetails && (
-                <div className="details">
-                  <p>Name: {memberDetails.name}</p>
-                  <p>Plan Expiry Date: {memberDetails.planExpiryDate}</p>
-                  <p>Days left: {memberDetails.daysLeft}</p>
-                </div>
+                <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+                  <DialogTitle>Member Details</DialogTitle>
+                  <DialogContent>
+                    <DialogContentText>
+                      <p>Name: {memberDetails.name}</p>
+                      <p>Plan Expiry Date: {memberDetails.planExpiryDate}</p>
+                      <p>Days left: {memberDetails.daysLeft}</p>
+                      <p>Batch: {memberDetails.batch}</p>
+                    </DialogContentText>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button
+                      onClick={() => setOpenDialog(false)}
+                      color="primary"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleMarkAttendance}
+                      color="primary"
+                      autoFocus
+                    >
+                      Mark Attendance
+                    </Button>
+                  </DialogActions>
+                </Dialog>
               )}
             </div>
           </div>

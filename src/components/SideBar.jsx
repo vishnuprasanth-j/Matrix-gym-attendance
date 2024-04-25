@@ -43,10 +43,10 @@ const Sidebar = ({ isOpen, handleClose }) => {
         open={isOpen}
         onClose={handleClose}
         sx={{
-          width: 250, 
+          width: 250,
           flexShrink: 0,
           "& .MuiDrawer-paper": {
-            width: 250, 
+            width: 250,
           },
         }}
       >
@@ -82,6 +82,13 @@ const Sidebar = ({ isOpen, handleClose }) => {
             onClick={handleClose}
           >
             <ListItemText primary="Absentees" />
+          </ListItemButton>
+          <ListItemButton
+            component={Link}
+            to={`/Plan/${branch}`}
+            onClick={handleClose}
+          >
+            <ListItemText primary="Plan" />
           </ListItemButton>
           <ListItemButton onClick={handleSignOut}>
             <ListItemText primary="Logout" />

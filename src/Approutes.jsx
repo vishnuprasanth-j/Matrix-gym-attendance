@@ -10,13 +10,14 @@ import AttendancePage from "./pages/AttendancePage";
 import EnquiryPage from "./pages/EnquiryPage";
 import { CircularProgress } from "@mui/material";
 import AbsenteesPage from "./pages/AbsenteesPage";
+import PlanEditPage from "./pages/PlanEditPage";
 
 const AppRoutes = () => {
   const { currentUser,authPending } = useContext(AuthContext);
   console.log(currentUser)
-  // if (authPending) {
-  //   return <CircularProgress sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }} />;
-  // }
+  if (authPending) {
+    return <CircularProgress sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }} />;
+  }
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
@@ -48,6 +49,10 @@ const AppRoutes = () => {
       <Route
         path="/Absentee/:branch"
         element={currentUser != null ? <AbsenteesPage /> : <HomePage />}
+      />
+      <Route
+        path="/Plan/:branch"
+        element={currentUser != null ? <PlanEditPage /> : <HomePage />}
       />
       <Route path="/Attendance" element={<AttendancePage/>} />
       <Route path="*" element={<Navigate to="/" />} />

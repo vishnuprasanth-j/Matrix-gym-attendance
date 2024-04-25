@@ -13,6 +13,8 @@ import {
   Button,
   Typography,
   TablePagination,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faBell } from "@fortawesome/free-solid-svg-icons";
@@ -25,6 +27,8 @@ const AbsenteesPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [selectedBatch, setSelectedBatch] = useState("Morning"); // State to manage the selected batch tab
+
   useEffect(() => {
     const fetchAbsentees = async () => {
       try {
@@ -42,9 +46,11 @@ const AbsenteesPage = () => {
           yesterday.setDate(yesterday.getDate() - 1);
           const yesterdayDateString = yesterday.toISOString().split("T")[0];
           if (
-            !member.attendance ||
-            (!member.attendance.includes(todayDateString) &&
-              !member.attendance.includes(yesterdayDateString))
+            // Check if the member belongs to the selected batch
+            member.batch === selectedBatch &&
+            (!member.attendance ||
+              (!member.attendance.includes(todayDateString) &&
+                !member.attendance.includes(yesterdayDateString)))
           ) {
             absenteesData.push({
               id: doc.id,
@@ -61,7 +67,8 @@ const AbsenteesPage = () => {
     };
 
     fetchAbsentees();
-  }, [branch]);
+  }, [branch, selectedBatch]); // Update the effect when branch or selectedBatch changes
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -70,6 +77,11 @@ const AbsenteesPage = () => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
+
+  const handleTabChange = (event, newValue) => {
+    setSelectedBatch(newValue);
+  };
+
   const handleSidebarOpen = () => {
     setIsSidebarOpen(true);
   };
@@ -86,9 +98,10 @@ const AbsenteesPage = () => {
         </Button>
         <Sidebar isOpen={isSidebarOpen} handleClose={handleSidebarClose} />
       </div>
-      <Typography variant="h6" textAlign={"center"}>
-        ABSENTEES
-      </Typography>
+      <Tabs value={selectedBatch} onChange={handleTabChange} variant="fullWidth">
+        <Tab label="Morning" value="Morning" />
+        <Tab label="Evening" value="Evening" />
+      </Tabs>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>

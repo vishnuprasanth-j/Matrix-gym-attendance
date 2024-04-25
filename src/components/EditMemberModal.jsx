@@ -76,7 +76,6 @@ const EditMemberModal = ({ open, handleClose, memberData, handleEdit }) => {
     }
   }, [memberData]);
   
-  console.log(memberData)
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -85,7 +84,7 @@ const EditMemberModal = ({ open, handleClose, memberData, handleEdit }) => {
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
-      await handleEdit(formData);
+      await handleEdit(formData,memberData,photoName);
     } catch (error) {
       console.error("An error occurred during the update:", error);
     }

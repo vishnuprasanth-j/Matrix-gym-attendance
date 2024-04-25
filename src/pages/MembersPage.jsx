@@ -9,9 +9,9 @@ import {
   updateDoc,
   doc,
   Timestamp,
-  deleteDoc
+  deleteDoc,
 } from "firebase/firestore";
-import { db, storage} from "../lib/firebase"; // Assuming 'db' is your Firestore instance
+import { db, storage } from "../lib/firebase"; // Assuming 'db' is your Firestore instance
 import {
   Button,
   TableContainer,
@@ -50,7 +50,30 @@ const MembersPage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editMemberData, setEditMemberData] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [plans, setPlans] = useState([]);
 
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const localPlans = localStorage.getItem("plans");
+        if (localPlans) {
+          setPlans(JSON.parse(localPlans));
+        } else {
+          const plansRef = collection(db, "plans");
+          const querySnapshot = await getDocs(plansRef);
+          const plansData = [];
+          querySnapshot.forEach((doc) => {
+            plansData.push({ id: doc.id, ...doc.data() });
+          });
+          setPlans(plansData);
+          localStorage.setItem("plans", JSON.stringify(plansData));
+        }
+      } catch (error) {
+        console.error("Error fetching plans: ", error);
+      }
+    };
+    fetchPlans();
+  }, []);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -75,12 +98,12 @@ const MembersPage = () => {
 
   useEffect(() => {
     const filteredMembers = members.filter((member) =>
-      member.name.toLowerCase().includes(searchQuery.toLowerCase())
+      member.regno.includes(searchQuery.toLowerCase())
     );
     setSortedMembers(filteredMembers);
-  }, [members, searchQuery]);
+  }, [searchQuery,members]);
 
-   const handleSearchChange = (event) => {
+  const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
   };
 
@@ -98,7 +121,7 @@ const MembersPage = () => {
       plan1: 1, // Duration of plan1 in months
       plan2: 4, // Duration of plan2 in months
       plan3: 6, // Duration of plan3 in months
-      plan4: 12 // Duration of plan4 in months
+      plan4: 12, // Duration of plan4 in months
     };
     const planDurationMonths = planLengths[currentPlan] || 0;
     if (!planDurationMonths) return null;
@@ -142,45 +165,42 @@ const MembersPage = () => {
       if (!selectedMember) return;
 
       const memberRef = doc(db, "members", selectedMember.id);
-     
+
       let planEndTS;
-      const currPlanStartDt = new Date(); 
+      const currPlanStartDt = new Date();
       switch (newPlan) {
-          case "plan1":
-              planEndTS = new Date(currPlanStartDt);
-              planEndTS.setMonth(planEndTS.getMonth() + 1);
-              break;
-          case "plan2":
-              planEndTS = new Date(currPlanStartDt);
-              planEndTS.setMonth(planEndTS.getMonth() + 4);
-              break;
-          case "plan3":
-              planEndTS = new Date(currPlanStartDt);
-              planEndTS.setMonth(planEndTS.getMonth() + 6);
-              break;
-          case "plan4":
-              planEndTS = new Date(currPlanStartDt);
-              planEndTS.setMonth(planEndTS.getMonth() + 12);
-              break;
-          default:
-              throw new Error("Unknown plan code: " + newPlan);
+        case "plan1":
+          planEndTS = new Date(currPlanStartDt);
+          planEndTS.setMonth(planEndTS.getMonth() + 1);
+          break;
+        case "plan2":
+          planEndTS = new Date(currPlanStartDt);
+          planEndTS.setMonth(planEndTS.getMonth() + 4);
+          break;
+        case "plan3":
+          planEndTS = new Date(currPlanStartDt);
+          planEndTS.setMonth(planEndTS.getMonth() + 6);
+          break;
+        case "plan4":
+          planEndTS = new Date(currPlanStartDt);
+          planEndTS.setMonth(planEndTS.getMonth() + 12);
+          break;
+        default:
+          throw new Error("Unknown plan code: " + newPlan);
       }
 
       planEndTS = Timestamp.fromDate(planEndTS);
-  
-      let updatedplanHistory={
-        plan:newPlan,
-        planStart:Timestamp.now(),
-        planEnd:planEndTS
-      }
-     
+
+      let updatedplanHistory = {
+        plan: newPlan,
+        planStart: Timestamp.now(),
+        planEnd: planEndTS,
+      };
+
       await updateDoc(memberRef, {
         currentPlan: newPlan,
         currPlanStart: Timestamp.now(),
-        planHistory: [
-          ...selectedMember.planHistory,
-          updatedplanHistory
-        ],
+        planHistory: [...selectedMember.planHistory, updatedplanHistory],
       });
 
       setIsRenewMemberModalOpen(false);
@@ -232,6 +252,9 @@ const MembersPage = () => {
 
       const memberRef = doc(db, "members", selectedMember.id);
       await deleteDoc(memberRef);
+      setMembers((prevMembers) =>
+      prevMembers.filter((member) => member.id !== selectedMember.id)
+    );
 
       setIsDeleteModalOpen(false);
     } catch (error) {
@@ -250,75 +273,84 @@ const MembersPage = () => {
   const isTimestamp = (value) => {
     return value instanceof Timestamp;
   };
-  
-  const handleEditMember = async (editedMember, photoName) => {
+
+  const handleEditMember = async (editedMember, existingData, photoName) => {
     try {
-      let currPlanStartTimestamp = editedMember.currPlanStart;
       let dobTimestamp = editedMember.dob;
-  
-      if (!isTimestamp(currPlanStartTimestamp)) {
-        currPlanStartTimestamp = Timestamp.fromDate(new Date(editedMember.currPlanStart));
-      }
       if (!isTimestamp(dobTimestamp)) {
         dobTimestamp = Timestamp.fromDate(new Date(editedMember.dob));
       }
-  
-      let planEndTS;
-      switch (editedMember.currentPlan) {
-          case "plan1":
-              planEndTS = new Date(editedMember.currPlanStart);
-              planEndTS.setMonth(planEndTS.getMonth() + 1);
-              break;
-          case "plan2":
-              planEndTS = new Date(editedMember.currPlanStart);
-              planEndTS.setMonth(planEndTS.getMonth() + 4);
-              break;
-          case "plan3":
-              planEndTS = new Date(editedMember.currPlanStart);
-              planEndTS.setMonth(planEndTS.getMonth() + 6);
-              break;
-          case "plan4":
-              planEndTS = new Date(editedMember.currPlanStart);
-              planEndTS.setMonth(planEndTS.getMonth() + 12);
-              break;
-          default:
-              throw new Error("Unknown plan code: " + editedMember.currentPlan);
+      let currPlanStartTimestamp = "";
+      let editedPlanHistory = "";
+      if (!isTimestamp(currPlanStartTimestamp)) {
+        currPlanStartTimestamp = Timestamp.fromDate(
+          new Date(editedMember.currPlanStart)
+        );
       }
 
-      planEndTS = Timestamp.fromDate(planEndTS);
-  
+      if (currPlanStartTimestamp.isEqual(existingData.currPlanStart) && editedMember.currentPlan==existingData.currentPlan) {
+        currPlanStartTimestamp = existingData.currPlanStart;
+        editedPlanHistory = existingData.planHistory;
+      } else {
+        let planEndTS;
+
+        switch (editedMember.currentPlan) {
+          case "plan1":
+            planEndTS = new Date(editedMember.currPlanStart);
+            planEndTS.setMonth(planEndTS.getMonth() + 1);
+            break;
+          case "plan2":
+            planEndTS = new Date(editedMember.currPlanStart);
+            planEndTS.setMonth(planEndTS.getMonth() + 4);
+            break;
+          case "plan3":
+            planEndTS = new Date(editedMember.currPlanStart);
+            planEndTS.setMonth(planEndTS.getMonth() + 6);
+            break;
+          case "plan4":
+            planEndTS = new Date(editedMember.currPlanStart);
+            planEndTS.setMonth(planEndTS.getMonth() + 12);
+            break;
+          default:
+            throw new Error("Unknown plan code: " + editedMember.currentPlan);
+        }
+
+        planEndTS = Timestamp.fromDate(planEndTS);
+
+        editedPlanHistory = Array.isArray(editedMember.planHistory)
+          ? [...editedMember.planHistory]
+          : [];
+        const lastPlan =
+          editedPlanHistory.length > 0
+            ? editedPlanHistory[editedPlanHistory.length - 1]
+            : null;
+        lastPlan.planStart = currPlanStartTimestamp;
+        lastPlan.plan = editedMember.currentPlan;
+        lastPlan.planEnd = planEndTS;
+      }
+
       if (photoName) {
         const storageRef = ref(storage, `files/${photoName}`);
         await uploadBytes(storageRef, editedMember.photo);
         const newPhotoURL = await getDownloadURL(storageRef);
-  
-     
+
         editedMember.photo = newPhotoURL;
       }
-      
-      let editedPlanHistory = Array.isArray(editedMember.planHistory) ? [...editedMember.planHistory] : [];
-      const lastPlan = editedPlanHistory.length > 0 ? editedPlanHistory[editedPlanHistory.length - 1] : null;
-      lastPlan.planStart = currPlanStartTimestamp;
-      lastPlan.plan = editedMember.currentPlan;
-      lastPlan.planEnd = planEndTS;
-      
+
       const memberRef = doc(db, "members", editedMember.id);
 
       await updateDoc(memberRef, {
-        ...editedMember, 
+        ...editedMember,
         currPlanStart: currPlanStartTimestamp,
         dob: dobTimestamp,
-        planHistory:editedPlanHistory
+        planHistory: editedPlanHistory,
       });
-  
-      console.log("Document successfully updated!");
-  
 
+      console.log("Document successfully updated!");
     } catch (error) {
       console.error("Error updating document: ", error);
     }
   };
-  
 
   return (
     <div className="memberspage-container">
@@ -337,7 +369,7 @@ const MembersPage = () => {
       </div>
 
       <TextField
-        label="Search by Name"
+        label="Search by Register Number"
         value={searchQuery}
         onChange={handleSearchChange}
         variant="outlined"
@@ -355,12 +387,11 @@ const MembersPage = () => {
         >
           <TableHead>
             <TableRow>
+              <TableCell>Reg No.</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Age</TableCell>
               <TableCell>Gender</TableCell>
               <TableCell>Phone</TableCell>
-              <TableCell>Weight</TableCell>
-              <TableCell>Height</TableCell>
               <TableCell>Days Left</TableCell>
               <TableCell align="center">Actions</TableCell>
             </TableRow>
@@ -374,15 +405,14 @@ const MembersPage = () => {
                 }}
                 className="bd"
               >
+               <TableCell>{member.regno}</TableCell>
                 <TableCell onClick={() => handleRowClick(member)}>
                   {member.name}
                 </TableCell>
                 <TableCell>{member.age}</TableCell>
                 <TableCell>{member.gender}</TableCell>
                 <TableCell>{member.phone}</TableCell>
-                <TableCell>{member.height + "cm"}</TableCell>
-                <TableCell>{member.weight + "kg"}</TableCell>
-
+              
                 <TableCell>
                   {daysLeft(member.currPlanStart?.toDate(), member.currentPlan)}
                 </TableCell>
@@ -427,7 +457,9 @@ const MembersPage = () => {
       </TableContainer>
       <AddMemberModal
         open={isAddMemberModalOpen}
+        plans={plans}
         handleClose={handleCloseAddMemberModal}
+        updateMembers={setMembers}
       />
       <RenewMemberModal
         open={isRenewMemberModalOpen}
@@ -447,13 +479,13 @@ const MembersPage = () => {
         onConfirm={handleDeleteMember}
         message="Are you sure you want to delete this member?"
       />
-        <EditMemberModal
-          open={isEditModalOpen}
-          handleClose={handleEditClose}
-          memberData={editMemberData}
-          handleEdit={handleEditMember}
-        />
-     </div>
+      <EditMemberModal
+        open={isEditModalOpen}
+        handleClose={handleEditClose}
+        memberData={editMemberData}
+        handleEdit={handleEditMember}
+      />
+    </div>
   );
 };
 

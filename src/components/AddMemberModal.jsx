@@ -13,17 +13,18 @@ import {
   Select,
   MenuItem,
   InputLabel,
+  Checkbox,
 } from "@mui/material";
 import { useState } from "react";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
-import { db, storage } from "../lib/firebase"; // Assuming 'db' is your Firestore instance
+import { db, storage } from "../lib/firebase"; 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCloudArrowUp } from "@fortawesome/free-solid-svg-icons";
 import { ref, getDownloadURL, uploadBytes } from "firebase/storage";
 import { useParams } from "react-router-dom";
 import ReceiptDialog from "./ReceiptDialog";
 
-const AddMemberModal = ({ open, handleClose }) => {
+const AddMemberModal = ({ open, handleClose,plans,updateMembers }) => {
   const { branch } = useParams();
   const [memberData, setMemberData] = useState({
     regno:"",
@@ -41,15 +42,36 @@ const AddMemberModal = ({ open, handleClose }) => {
     planHistory: [],
     weight: "",
     memberSince: "",
+    batch:""
   });
 
   const [photoName, setPhotoName] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [showReceipt, setShowReceipt] = useState(false);
+  const [amount, setAmount] = useState("");
 
   const handleChange = (event) => {
-    const { name, value } = event.target;
-    setMemberData({ ...memberData, [name]: value });
+    const { name, value } = event.target;  
+    if (name === "currentPlan") {
+      const selectedPlan = plans.find((plan) => plan.id === value);
+      setAmount(selectedPlan.amount)
+      setMemberData({ ...memberData, [name]: value});
+    } else if (name === "dob") {
+      const dob = new Date(value);
+      const age = calculateAge(dob);
+      setMemberData({ ...memberData, [name]: value, age: age });
+    } else {
+      setMemberData({ ...memberData, [name]: value });
+    }
+  };
+  const handleAmountChange=(event)=>{
+    const { value } = event.target;  
+    setAmount(value);
+  }
+  const calculateAge = (dob) => {
+    const diff = Date.now() - dob.getTime();
+    const ageDate = new Date(diff);
+    return Math.abs(ageDate.getUTCFullYear() - 1970);
   };
 
   const handlePhotoChange = (event) => {
@@ -89,6 +111,7 @@ const AddMemberModal = ({ open, handleClose }) => {
         plan: memberData.currentPlan,
         planStart: currPlanStartTS,
         planEnd: Timestamp.fromDate(planEndTS),
+        amount:amount
       });
       const memberWithallFields = {
         ...memberData,
@@ -102,6 +125,7 @@ const AddMemberModal = ({ open, handleClose }) => {
       console.log(memberWithallFields);
       await addMemberToFirestore(memberWithallFields);
       console.log("Member added successfully!");
+      updateMembers(prev=>[...prev,memberWithallFields])
       setSuccessMessage("Member successfully added!");
     } catch (error) {
       console.error("Error adding member:", error);
@@ -177,6 +201,7 @@ const AddMemberModal = ({ open, handleClose }) => {
                   onChange={handleChange}
                   fullWidth
                   required
+                  disabled
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -189,6 +214,20 @@ const AddMemberModal = ({ open, handleClose }) => {
                   required
                 />
               </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  name="batch"
+                  value={memberData.batch}
+                  onChange={handleChange}
+                  fullWidth
+                  label="Batch"
+                  select
+                  required
+                >
+                  <MenuItem value="Morning">Morning</MenuItem>
+                  <MenuItem value="Evening">Evening</MenuItem>
+                </TextField>
+              </Grid>
               <Grid item xs={12}>
                 <TextField
                   label="Address"
@@ -200,13 +239,14 @@ const AddMemberModal = ({ open, handleClose }) => {
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <InputLabel>Blood Group*</InputLabel>
-                <Select
+                <TextField
                   name="bloodgroup"
+                  label="Blood Group"
                   value={memberData.bloodgroup}
                   onChange={handleChange}
                   fullWidth
                   required
+                  select
                 >
                   <MenuItem value="A+">A+</MenuItem>
                   <MenuItem value="A-">A-</MenuItem>
@@ -216,33 +256,35 @@ const AddMemberModal = ({ open, handleClose }) => {
                   <MenuItem value="AB-">AB-</MenuItem>
                   <MenuItem value="O+">O+</MenuItem>
                   <MenuItem value="O-">O-</MenuItem>
-                </Select>
+                </TextField>
               </Grid>
               <Grid item xs={12} sm={6}>
-                <InputLabel>Plan*</InputLabel>
-                <Select
+              <TextField
+                  select
                   name="currentPlan"
+                  label="Plan"
                   value={memberData.currentPlan}
                   onChange={handleChange}
                   fullWidth
                   required
                 >
-                  <MenuItem value="plan1">Plan 1 (1 month)</MenuItem>
-                  <MenuItem value="plan2">Plan 2 (4 month)</MenuItem>
-                  <MenuItem value="plan3">Plan 3 (6 month)</MenuItem>
-                  <MenuItem value="plan4">Plan 4 (12 month)</MenuItem>
-                </Select>
+                  {plans.map((plan) => (
+                    <MenuItem key={plan.id} value={plan.id}>
+                      {plan.dn}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
-                  label="Height"
-                  name="height"
-                  value={memberData.height}
-                  onChange={handleChange}
+                  label="Amount"
+                  name="amount"
+                  value={amount}
+                  onChange={handleAmountChange}
                   fullWidth
-                  required
                 />
               </Grid>
+             
               <Grid item xs={12} sm={6}>
                 <TextField
                   label="Weight"
