@@ -74,7 +74,7 @@ const MembersPage = () => {
     };
     fetchPlans();
   }, []);
-
+ 
   useEffect(() => {
     const fetchMembers = async () => {
       try {
@@ -92,8 +92,7 @@ const MembersPage = () => {
         console.error("Error fetching members: ", error);
       }
     };
-
-    fetchMembers();
+     fetchMembers();
   }, [branch]);
 
   useEffect(() => {
@@ -116,26 +115,12 @@ const MembersPage = () => {
     setPage(0);
   };
 
-  const calculateCurrPlanEnd = (currPlanStart, currentPlan) => {
-    const planLengths = {
-      plan1: 1, // Duration of plan1 in months
-      plan2: 4, // Duration of plan2 in months
-      plan3: 6, // Duration of plan3 in months
-      plan4: 12, // Duration of plan4 in months
-    };
-    const planDurationMonths = planLengths[currentPlan] || 0;
-    if (!planDurationMonths) return null;
-    console.log(currPlanStart);
-    const planEnd = new Date(currPlanStart);
-    planEnd.setMonth(planEnd.getMonth() + planDurationMonths);
-    return planEnd;
-  };
+ 
 
-  const isPlanExpired = (currPlanStart, currentPlan) => {
-    const currPlanEnd = calculateCurrPlanEnd(currPlanStart, currentPlan);
-    if (!currPlanStart || !currPlanEnd) return false; // Return false if plan start or end date is not available
+  const isPlanExpired = (planHistory) => {
+    const currPlanEnd = planHistory[planHistory.length-1].planEnd.toDate();
     const now = new Date();
-    return now > currPlanEnd; // Check if the current date is after the plan end date
+    return now > currPlanEnd; 
   };
 
   const sortedAndPaginatedMembers = sortedMembers.slice(
@@ -160,7 +145,7 @@ const MembersPage = () => {
     setIsRenewMemberModalOpen(false);
   };
 
-  const handleRenewMember = async (newPlan) => {
+  const handleRenewMember = async (newPlan,duration) => {
     try {
       if (!selectedMember) return;
 
@@ -168,33 +153,15 @@ const MembersPage = () => {
 
       let planEndTS;
       const currPlanStartDt = new Date();
-      switch (newPlan) {
-        case "plan1":
-          planEndTS = new Date(currPlanStartDt);
-          planEndTS.setMonth(planEndTS.getMonth() + 1);
-          break;
-        case "plan2":
-          planEndTS = new Date(currPlanStartDt);
-          planEndTS.setMonth(planEndTS.getMonth() + 4);
-          break;
-        case "plan3":
-          planEndTS = new Date(currPlanStartDt);
-          planEndTS.setMonth(planEndTS.getMonth() + 6);
-          break;
-        case "plan4":
-          planEndTS = new Date(currPlanStartDt);
-          planEndTS.setMonth(planEndTS.getMonth() + 12);
-          break;
-        default:
-          throw new Error("Unknown plan code: " + newPlan);
-      }
-
+      planEndTS = new Date(currPlanStartDt)
+      planEndTS.setMonth(planEndTS.getMonth() + duration)
       planEndTS = Timestamp.fromDate(planEndTS);
 
       let updatedplanHistory = {
         plan: newPlan,
         planStart: Timestamp.now(),
         planEnd: planEndTS,
+        
       };
 
       await updateDoc(memberRef, {
@@ -202,16 +169,14 @@ const MembersPage = () => {
         currPlanStart: Timestamp.now(),
         planHistory: [...selectedMember.planHistory, updatedplanHistory],
       });
-
       setIsRenewMemberModalOpen(false);
     } catch (error) {
       console.error("Error renewing member:", error);
     }
   };
 
-  const daysLeft = (currPlanStart, currentPlan) => {
-    const currPlanEnd = calculateCurrPlanEnd(currPlanStart, currentPlan);
-    if (!currPlanStart || !currPlanEnd) return "";
+  const daysLeft = ( planHistory) => {
+    const currPlanEnd = planHistory[planHistory.length-1].planEnd.toDate();
     const now = new Date();
     const diffInDays = differenceInDays(currPlanEnd, now);
     if (diffInDays <= 0) {
@@ -280,55 +245,8 @@ const MembersPage = () => {
       if (!isTimestamp(dobTimestamp)) {
         dobTimestamp = Timestamp.fromDate(new Date(editedMember.dob));
       }
-      let currPlanStartTimestamp = "";
-      let editedPlanHistory = "";
-      if (!isTimestamp(currPlanStartTimestamp)) {
-        currPlanStartTimestamp = Timestamp.fromDate(
-          new Date(editedMember.currPlanStart)
-        );
-      }
-
-      if (currPlanStartTimestamp.isEqual(existingData.currPlanStart) && editedMember.currentPlan==existingData.currentPlan) {
-        currPlanStartTimestamp = existingData.currPlanStart;
-        editedPlanHistory = existingData.planHistory;
-      } else {
-        let planEndTS;
-
-        switch (editedMember.currentPlan) {
-          case "plan1":
-            planEndTS = new Date(editedMember.currPlanStart);
-            planEndTS.setMonth(planEndTS.getMonth() + 1);
-            break;
-          case "plan2":
-            planEndTS = new Date(editedMember.currPlanStart);
-            planEndTS.setMonth(planEndTS.getMonth() + 4);
-            break;
-          case "plan3":
-            planEndTS = new Date(editedMember.currPlanStart);
-            planEndTS.setMonth(planEndTS.getMonth() + 6);
-            break;
-          case "plan4":
-            planEndTS = new Date(editedMember.currPlanStart);
-            planEndTS.setMonth(planEndTS.getMonth() + 12);
-            break;
-          default:
-            throw new Error("Unknown plan code: " + editedMember.currentPlan);
-        }
-
-        planEndTS = Timestamp.fromDate(planEndTS);
-
-        editedPlanHistory = Array.isArray(editedMember.planHistory)
-          ? [...editedMember.planHistory]
-          : [];
-        const lastPlan =
-          editedPlanHistory.length > 0
-            ? editedPlanHistory[editedPlanHistory.length - 1]
-            : null;
-        lastPlan.planStart = currPlanStartTimestamp;
-        lastPlan.plan = editedMember.currentPlan;
-        lastPlan.planEnd = planEndTS;
-      }
-
+  
+      
       if (photoName) {
         const storageRef = ref(storage, `files/${photoName}`);
         await uploadBytes(storageRef, editedMember.photo);
@@ -336,22 +254,21 @@ const MembersPage = () => {
 
         editedMember.photo = newPhotoURL;
       }
+  
 
       const memberRef = doc(db, "members", editedMember.id);
 
       await updateDoc(memberRef, {
         ...editedMember,
-        currPlanStart: currPlanStartTimestamp,
         dob: dobTimestamp,
-        planHistory: editedPlanHistory,
       });
-
+  
       console.log("Document successfully updated!");
     } catch (error) {
       console.error("Error updating document: ", error);
     }
   };
-
+  
   return (
     <div className="memberspage-container">
       <div className="memberspage-btn-container">
@@ -390,7 +307,7 @@ const MembersPage = () => {
               <TableCell>Reg No.</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Age</TableCell>
-              <TableCell>Gender</TableCell>
+              <TableCell>Batch</TableCell>
               <TableCell>Phone</TableCell>
               <TableCell>Days Left</TableCell>
               <TableCell align="center">Actions</TableCell>
@@ -410,11 +327,11 @@ const MembersPage = () => {
                   {member.name}
                 </TableCell>
                 <TableCell>{member.age}</TableCell>
-                <TableCell>{member.gender}</TableCell>
+                <TableCell>{member.batch}</TableCell>
                 <TableCell>{member.phone}</TableCell>
               
                 <TableCell>
-                  {daysLeft(member.currPlanStart?.toDate(), member.currentPlan)}
+                  {daysLeft(member.planHistory)}
                 </TableCell>
 
                 <TableCell align="center">
@@ -428,8 +345,7 @@ const MembersPage = () => {
                     <FontAwesomeIcon icon={faTrash} />
                   </Button>
                   {isPlanExpired(
-                    member.currPlanStart?.toDate() || "",
-                    member.currentPlan
+                    member.planHistory
                   ) ? (
                     <Button
                       style={{ color: "red" }}
@@ -466,6 +382,7 @@ const MembersPage = () => {
         handleClose={handleCloseRenewMemberModal}
         memberData={selectedMember}
         handleRenew={handleRenewMember}
+        plans={plans}
       />
       <UserInfoModal
         open={selectedMemberInfo !== null}

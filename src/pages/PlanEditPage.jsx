@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import {
@@ -13,12 +13,16 @@ import {
   Button,
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars } from "@fortawesome/free-solid-svg-icons";
+import { faBars, faPen } from "@fortawesome/free-solid-svg-icons";
 import Sidebar from "../components/SideBar";
+import PlanEditModal from "../components/PlanEditModal";
 
 const PlanEditPage = () => {
   const [plans, setPlans] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false); 
+  const [selectedPlan, setSelectedPlan] = useState(null);
+
   useEffect(() => {
     const fetchPlans = async () => {
       try {
@@ -28,17 +32,14 @@ const PlanEditPage = () => {
         querySnapshot.forEach((doc) => {
           plansData.push({ id: doc.id, ...doc.data() });
         });
-        console.log(plansData);
         setPlans(plansData);
-        localStorage.removeItem("plans")
-        localStorage.setItem("plans",JSON.stringify(plansData))
       } catch (error) {
         console.error("Error fetching plans: ", error);
       }
     };
 
     fetchPlans();
-  }, []);
+  }, [editModalOpen]);
 
   const handleSidebarOpen = () => {
     setIsSidebarOpen(true);
@@ -47,9 +48,19 @@ const PlanEditPage = () => {
   const handleSidebarClose = () => {
     setIsSidebarOpen(false);
   };
+
+  const handleEditPlan = (plan) => {
+    setSelectedPlan(plan);
+    setEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setEditModalOpen(false);
+  };
+
   return (
     <div>
-     <div className="enquirypage-btn-container">
+      <div className="enquirypage-btn-container">
         <Button onClick={handleSidebarOpen}>
           <FontAwesomeIcon icon={faBars} />
         </Button>
@@ -57,7 +68,7 @@ const PlanEditPage = () => {
       </div>
 
       <Typography variant="h6" textAlign={"center"}>
-       Plans
+        Plans
       </Typography>
       <TableContainer
         component={Paper}
@@ -74,22 +85,34 @@ const PlanEditPage = () => {
         >
           <TableHead>
             <TableRow>
-              <TableCell>Plan ID</TableCell>
+              <TableCell>Name</TableCell>
               <TableCell>Duration</TableCell>
               <TableCell>Amount</TableCell>
+              <TableCell>Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {plans.map((plan) => (
               <TableRow key={plan.id}>
-                <TableCell>{plan.id}</TableCell>
                 <TableCell>{plan.dn}</TableCell>
+                <TableCell>{plan.duration}</TableCell>
                 <TableCell>{plan.amount}</TableCell>
+                <TableCell>
+                  <Button onClick={() => handleEditPlan(plan)}>
+                    <FontAwesomeIcon icon={faPen} />
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+
+      <PlanEditModal
+        open={editModalOpen}
+        handleClose={handleCloseEditModal}
+        plan={selectedPlan}
+      />
     </div>
   );
 };

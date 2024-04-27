@@ -17,17 +17,17 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
-import { db, storage } from "../lib/firebase"; 
+import { db, storage } from "../lib/firebase";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCloudArrowUp } from "@fortawesome/free-solid-svg-icons";
 import { ref, getDownloadURL, uploadBytes } from "firebase/storage";
 import { useParams } from "react-router-dom";
 import ReceiptDialog from "./ReceiptDialog";
 
-const AddMemberModal = ({ open, handleClose,plans,updateMembers }) => {
+const AddMemberModal = ({ open, handleClose, plans, updateMembers }) => {
   const { branch } = useParams();
   const [memberData, setMemberData] = useState({
-    regno:"",
+    regno: "",
     name: "",
     age: "",
     bloodgroup: "",
@@ -42,20 +42,21 @@ const AddMemberModal = ({ open, handleClose,plans,updateMembers }) => {
     planHistory: [],
     weight: "",
     memberSince: "",
-    batch:""
+    batch: "",
   });
 
   const [photoName, setPhotoName] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [showReceipt, setShowReceipt] = useState(false);
   const [amount, setAmount] = useState("");
+  const [receiptData, setReceiptData] = useState(false);
 
   const handleChange = (event) => {
-    const { name, value } = event.target;  
+    const { name, value } = event.target;
     if (name === "currentPlan") {
-      const selectedPlan = plans.find((plan) => plan.id === value);
-      setAmount(selectedPlan.amount)
-      setMemberData({ ...memberData, [name]: value});
+      const selectedPlan = plans.find((plan) => plan.dn === value);
+      setAmount(selectedPlan.amount);
+      setMemberData({ ...memberData, [name]: selectedPlan.dn });
     } else if (name === "dob") {
       const dob = new Date(value);
       const age = calculateAge(dob);
@@ -64,10 +65,10 @@ const AddMemberModal = ({ open, handleClose,plans,updateMembers }) => {
       setMemberData({ ...memberData, [name]: value });
     }
   };
-  const handleAmountChange=(event)=>{
-    const { value } = event.target;  
+  const handleAmountChange = (event) => {
+    const { value } = event.target;
     setAmount(value);
-  }
+  };
   const calculateAge = (dob) => {
     const diff = Date.now() - dob.getTime();
     const ageDate = new Date(diff);
@@ -85,6 +86,9 @@ const AddMemberModal = ({ open, handleClose,plans,updateMembers }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
+      const selectedPlan = plans.find(
+        (plan) => plan.dn === memberData.currentPlan
+      );
       let photoUrl = memberData.photo
         ? await uploadPhoto(memberData.photo)
         : "";
@@ -92,26 +96,15 @@ const AddMemberModal = ({ open, handleClose,plans,updateMembers }) => {
       let currPlanStartTS = Timestamp.fromDate(dummydt);
       let dobTS = Timestamp.fromDate(new Date(memberData.dob));
       let planEndTS;
-      if (memberData.currentPlan === "plan1") {
-        planEndTS = new Date(memberData.currPlanStart);
-        planEndTS.setMonth(planEndTS.getMonth() + 1);
-      } else if (memberData.currentPlan === "plan2") {
-        planEndTS = new Date(memberData.currPlanStart);
-        planEndTS.setMonth(planEndTS.getMonth() + 4);
-      } else if (memberData.currentPlan === "plan3") {
-        planEndTS = new Date(memberData.currPlanStart);
-        planEndTS.setMonth(planEndTS.getMonth() + 6);
-      } else if (memberData.currentPlan === "plan4") {
-        planEndTS = new Date(memberData.currPlanStart);
-        planEndTS.setMonth(planEndTS.getMonth() + 12);
-      }
+      planEndTS = new Date(memberData.currPlanStart);
+      planEndTS.setMonth(planEndTS.getMonth() + selectedPlan.duration);
 
       let plArray = [];
       plArray.push({
         plan: memberData.currentPlan,
         planStart: currPlanStartTS,
         planEnd: Timestamp.fromDate(planEndTS),
-        amount:amount
+        amount: amount,
       });
       const memberWithallFields = {
         ...memberData,
@@ -125,7 +118,8 @@ const AddMemberModal = ({ open, handleClose,plans,updateMembers }) => {
       console.log(memberWithallFields);
       await addMemberToFirestore(memberWithallFields);
       console.log("Member added successfully!");
-      updateMembers(prev=>[...prev,memberWithallFields])
+      updateMembers((prev) => [...prev, memberWithallFields]);
+      setReceiptData(memberWithallFields)
       setSuccessMessage("Member successfully added!");
     } catch (error) {
       console.error("Error adding member:", error);
@@ -158,7 +152,7 @@ const AddMemberModal = ({ open, handleClose,plans,updateMembers }) => {
         {!successMessage && (
           <form onSubmit={handleSubmit}>
             <Grid container spacing={2} sx={{ marginTop: "10px" }}>
-            <Grid item xs={12} sm={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   label="Registration No."
                   name="regno"
@@ -259,7 +253,7 @@ const AddMemberModal = ({ open, handleClose,plans,updateMembers }) => {
                 </TextField>
               </Grid>
               <Grid item xs={12} sm={6}>
-              <TextField
+                <TextField
                   select
                   name="currentPlan"
                   label="Plan"
@@ -269,7 +263,7 @@ const AddMemberModal = ({ open, handleClose,plans,updateMembers }) => {
                   required
                 >
                   {plans.map((plan) => (
-                    <MenuItem key={plan.id} value={plan.id}>
+                    <MenuItem key={plan.id} value={plan.dn}>
                       {plan.dn}
                     </MenuItem>
                   ))}
@@ -284,12 +278,22 @@ const AddMemberModal = ({ open, handleClose,plans,updateMembers }) => {
                   fullWidth
                 />
               </Grid>
-             
+
               <Grid item xs={12} sm={6}>
                 <TextField
                   label="Weight"
                   name="weight"
                   value={memberData.weight}
+                  onChange={handleChange}
+                  fullWidth
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Height"
+                  name="height"
+                  value={memberData.height}
                   onChange={handleChange}
                   fullWidth
                   required
@@ -371,7 +375,7 @@ const AddMemberModal = ({ open, handleClose,plans,updateMembers }) => {
       <ReceiptDialog
         open={showReceipt}
         onClose={handleCloseReceipt}
-        memberData={memberData}
+        receiptData={receiptData}
       />
     </Dialog>
   );

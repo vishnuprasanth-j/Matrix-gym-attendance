@@ -1,5 +1,36 @@
-.batch-container{
+.enquirypage-container {
+  margin: 50px;
+}
+
+.date-picker-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+ input.date-picker{
+    border: none;
+    background-color: #216ba5;
+    font-family: "Poppins", sans-serif;
+    padding: 8px;
+    color: aliceblue;
+    font-size: 26px;
+    height: 40px;
+    width: 164px;
+    text-align: center;
+    padding: 10px;
+    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+}
+
+.attendance-options{
     display: flex;
-    margin-bottom: 20px;
-    justify-content: space-between;
+    justify-content:space-between;
+    margin-bottom: 10px;
+    align-items: center;
+}
+.filter-container{
+    border: 2px solid black;
+    padding: 5px;
+    border-radius: 8px;
+    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
 }

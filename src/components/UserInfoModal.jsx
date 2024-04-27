@@ -56,18 +56,12 @@ const UserInfoModal = ({ open, handleClose, memberInfo }) => {
     branch2: "Kasipalayam Branch",
   };
 
-  const planLabels = {
-    plan1: "Plan 1 (1 month)",
-    plan2: "Plan 2 (4 months)",
-    plan3: "Plan 3 (6 months)",
-    plan4: "Plan 4 (12 months)",
-  };
 
   const getBranchLabel = (branch) => branchLabels[branch] || branch;
-  const getPlanLabel = (plan) => planLabels[plan] || plan;
+
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth={true}>
+    <Dialog open={open} onClose={handleClose} maxWidth="s" fullWidth={true}>
       <DialogTitle>
         <div style={{ display: "flex", alignItems: "center" }}>
           <FontAwesomeIcon
@@ -111,6 +105,7 @@ const UserInfoModal = ({ open, handleClose, memberInfo }) => {
                           <TableCell>Plan</TableCell>
                           <TableCell>Plan Start</TableCell>
                           <TableCell>Plan End</TableCell>
+                          <TableCell>Amount</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
@@ -119,10 +114,13 @@ const UserInfoModal = ({ open, handleClose, memberInfo }) => {
                             <TableCell>{index + 1}</TableCell>
                             <TableCell>{plan.plan}</TableCell>
                             <TableCell>
-                              {plan.planStart.toDate().toLocaleDateString()}
+                              {plan.planStart.toDate().toLocaleDateString('en-GB')}
                             </TableCell>
                             <TableCell>
-                              {plan.planEnd.toDate().toLocaleDateString()}
+                              {plan.planEnd.toDate().toLocaleDateString('en-GB')}
+                            </TableCell>
+                            <TableCell>
+                              {plan.amount}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -131,7 +129,7 @@ const UserInfoModal = ({ open, handleClose, memberInfo }) => {
                   </Grid>
                 ) : (
                   <React.Fragment>
-                    <Grid item xs={6} sm={3} sx={{ paddingLeft: "30px" }}>
+                    <Grid item xs={6} sm={6} sx={{ paddingLeft: "30px" }}>
                       <Typography
                         variant="subtitle2"
                         sx={{ fontWeight: "bold" }}
@@ -139,14 +137,12 @@ const UserInfoModal = ({ open, handleClose, memberInfo }) => {
                         {formatLabel(key)}:
                       </Typography>
                     </Grid>
-                    <Grid item xs={6} sm={9}>
+                    <Grid item xs={6} sm={6}>
                       <Typography variant="body2" sx={{ marginLeft: "10px" }}>
                         {key === "branch"
                           ? getBranchLabel(memberInfo[key])
-                          : key === "currentPlan"
-                          ? getPlanLabel(memberInfo[key])
                           : key === "currPlanStart" || key === "dob"
-                          ? memberInfo[key].toDate().toLocaleDateString()
+                          ? memberInfo[key].toDate().toLocaleDateString('en-GB')
                           : memberInfo[key]}
                       </Typography>
                     </Grid>
@@ -155,7 +151,6 @@ const UserInfoModal = ({ open, handleClose, memberInfo }) => {
               </React.Fragment>
             ))}
         </Grid>
-        ``
       </DialogContent>
     </Dialog>
   );

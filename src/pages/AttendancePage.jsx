@@ -19,7 +19,6 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
-import { Link } from "react-router-dom";
 import POINTS from "/points.png";
 
 const AttendancePage = () => {
@@ -94,9 +93,12 @@ const AttendancePage = () => {
       const attendanceArray = memberDoc.data().attendance || [];
       if (attendanceArray.includes(today)) {
         setErrorMessage("Attendance already marked for today");
+        setOpenDialog(false);
+        setRegNumber("");
       }else{
         await updateDoc(memberDoc.ref, { attendance: arrayUnion(today) });
         setSuccessMessage("Attendance marked successfully");
+        setRegNumber("");
         setOpenDialog(false);
       }
       setTimeout(() => {
@@ -155,6 +157,7 @@ const AttendancePage = () => {
                     value={regNumber}
                     onChange={handleRegNumberChange}
                     required
+                    autoFocus
                   />
                 </div>
               </div>

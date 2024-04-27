@@ -48,7 +48,7 @@ const EditMemberModal = ({ open, handleClose, memberData, handleEdit }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [photoName, setPhotoName] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
-  // Update formData whenever memberData changes
+
   useEffect(() => {
     if (memberData) {
       setFormData({
@@ -58,19 +58,19 @@ const EditMemberModal = ({ open, handleClose, memberData, handleEdit }) => {
         age: memberData.age || "",
         bloodgroup: memberData.bloodgroup || "",
         branch: memberData.branch || "",
-        currentPlan: memberData.currentPlan || "",
+        // currentPlan: memberData.currentPlan || "",
         dob: convertTimestampToString(memberData.dob || ""),
         gender: memberData.gender || "",
         height: memberData.height || "",
         phone: memberData.phone || "",
         weight: memberData.weight || "",
-        currPlanStart: convertTimestampToString(
-          memberData?.currPlanStart || ""
-        ),
+        // currPlanStart: convertTimestampToString(
+        //   memberData?.currPlanStart || ""
+        // ),
         address: memberData.address || "",
         photo: memberData.photo || "",
-        planHistory:memberData.planHistory || "",
-        memberSince: memberData.memberSince || ""
+        // planHistory:memberData.planHistory || "",
+        // memberSince: memberData.memberSince || ""
       });
       setPhotoUrl(memberData.photo || "")
     }
@@ -233,7 +233,7 @@ const handleEditPhoto=()=>{
               <MenuItem value="branch2">Branch 2</MenuItem>
             </Select>
           </Grid>
-          <Grid item xs={6}>
+          {/* <Grid item xs={6}>
             <Select
               label="Current Plan"
               name="currentPlan"
@@ -256,7 +256,7 @@ const handleEditPhoto=()=>{
               onChange={handleChange}
               fullWidth
             />
-          </Grid>
+          </Grid> */}
           <Grid item xs={6}>
             <TextField
               label="Date of Birth"

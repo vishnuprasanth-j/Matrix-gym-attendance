@@ -13,11 +13,11 @@ import {
 } from "@mui/material";
 import html2pdf from "html2pdf.js";
 
-const ReceiptDialog = ({ open, onClose, memberData }) => {
-  if (!memberData) {
+const ReceiptDialog = ({ open, onClose, receiptData}) => {
+  if (!receiptData) {
     return null;
   }
-
+ const{name,planHistory,currentPlan,phone}=receiptData;
   const handleDownload = () => {
     const element = document.getElementById("receipt-content");
     const opt = {
@@ -41,43 +41,37 @@ const ReceiptDialog = ({ open, onClose, memberData }) => {
           Matrix Gym
         </Typography>
         <Typography variant="subtitle2" gutterBottom style={{ float: 'right' }}>
-          {new Date().toLocaleDateString()}
+          {planHistory[planHistory.length-1].planStart.toDate().toLocaleDateString('en-GB')}
         </Typography>
         <TableContainer>
           <Table   sx={{ border: '2px solid #ccc', borderRadius: '8px' }}>
             <TableBody>
               <TableRow  sx={{marginBottom:"5px" }}>
                 <TableCell>Name:</TableCell>
-                <TableCell>{memberData.name}</TableCell>
+                <TableCell>{name}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Phone Number:</TableCell>
-                <TableCell>{memberData.phone}</TableCell>
+                <TableCell>{phone}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Plan:</TableCell>
                 <TableCell>
-                  {memberData.currentPlan === "plan1" ? "1 month" : ""}
-                  {memberData.currentPlan === "plan2" ? "4 months" : ""}
-                  {memberData.currentPlan === "plan3" ? "6 months" : ""}
-                  {memberData.currentPlan === "plan4" ? "12 months" : ""}
+                 {currentPlan}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Plan End</TableCell>
+                <TableCell>
+                 {planHistory[planHistory.length-1].planEnd.toDate().toLocaleDateString('en-GB')}
                 </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Amount</TableCell>
                 <TableCell>
-                  {memberData.currentPlan === "plan1" ? "₹1200" : ""}
-                  {memberData.currentPlan === "plan2" ? "₹3000" : ""}
-                  {memberData.currentPlan === "plan3" ? "₹6000" : ""}
-                  {memberData.currentPlan === "plan4" ? "₹12000" : ""}
+                 {planHistory[planHistory.length-1].amount}
                 </TableCell>
               </TableRow>
-              {/* <TableRow>
-                <TableCell>Plan End</TableCell>
-                <TableCell>
-                  {memberData.planHistory[planHistory.length-1].planEnd}
-                </TableCell>
-              </TableRow> */}
             </TableBody>
           </Table>
         </TableContainer>

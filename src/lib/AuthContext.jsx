@@ -25,6 +25,7 @@ export const AuthProvider = ({ children }) => {
         setAuthPending(false);
       }
     });
+    setAuthPending(false);
     return unsubscribe;
   }, [setCurrentUser]);
   

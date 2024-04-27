@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../lib/firebase";
@@ -15,11 +15,16 @@ import {
   TablePagination,
   Tabs,
   Tab,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faBell } from "@fortawesome/free-solid-svg-icons";
 import Sidebar from "../components/SideBar";
-import "../styles/EnquiryPage.css";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import "../styles/AbsenteesPage.css";
 
 const AbsenteesPage = () => {
   const { branch } = useParams();
@@ -27,30 +32,30 @@ const AbsenteesPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [selectedBatch, setSelectedBatch] = useState("Morning"); // State to manage the selected batch tab
+  const [selectedBatch, setSelectedBatch] = useState("Morning");
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [attendanceOption, setAttendanceOption] = useState("Absent");
 
   useEffect(() => {
     const fetchAbsentees = async () => {
       try {
         const membersRef = collection(db, "members");
-        const q = branch
-          ? query(membersRef, where("branch", "==", branch))
-          : membersRef;
+        let q = query(membersRef);
+        if (branch) {
+          q = query(q, where("branch", "==", branch));
+        }
         const querySnapshot = await getDocs(q);
         const absenteesData = [];
         querySnapshot.forEach((doc) => {
           const member = doc.data();
-          const today = new Date();
-          const todayDateString = today.toISOString().split("T")[0];
-          const yesterday = new Date();
-          yesterday.setDate(yesterday.getDate() - 1);
-          const yesterdayDateString = yesterday.toISOString().split("T")[0];
+          const formattedDate = formatDate(selectedDate);
+
           if (
-            // Check if the member belongs to the selected batch
+            // Check if the member belongs to the selected batch and is absent on the selected date
             member.batch === selectedBatch &&
-            (!member.attendance ||
-              (!member.attendance.includes(todayDateString) &&
-                !member.attendance.includes(yesterdayDateString)))
+            (attendanceOption === "Present"
+              ? member.attendance && member.attendance.includes(formattedDate)
+              : !member.attendance || !member.attendance.includes(formattedDate))
           ) {
             absenteesData.push({
               id: doc.id,
@@ -67,8 +72,17 @@ const AbsenteesPage = () => {
     };
 
     fetchAbsentees();
-  }, [branch, selectedBatch]); // Update the effect when branch or selectedBatch changes
+  }, [branch, selectedBatch, selectedDate, attendanceOption]);
 
+
+  const formatDate = (date) => {
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    return `${month}/${day}/${year}`;
+  };
+
+  
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -80,6 +94,14 @@ const AbsenteesPage = () => {
 
   const handleTabChange = (event, newValue) => {
     setSelectedBatch(newValue);
+  };
+
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+  };
+
+  const handleAttendanceOptionChange = (event) => {
+    setAttendanceOption(event.target.value);
   };
 
   const handleSidebarOpen = () => {
@@ -98,10 +120,51 @@ const AbsenteesPage = () => {
         </Button>
         <Sidebar isOpen={isSidebarOpen} handleClose={handleSidebarClose} />
       </div>
-      <Tabs value={selectedBatch} onChange={handleTabChange} variant="fullWidth">
+      <Tabs
+        value={selectedBatch}
+        onChange={handleTabChange}
+        variant="fullWidth"
+        sx={{ marginBottom: "10px" }}
+      >
         <Tab label="Morning" value="Morning" />
         <Tab label="Evening" value="Evening" />
       </Tabs>
+      
+      <div className="attendance-options">
+      <div className="date-picker-container">
+      <DatePicker
+          selected={selectedDate}
+          onChange={handleDateChange}
+          dateFormat="dd/MM/yyyy"
+          className="date-picker"
+        />
+      </div>
+
+      <div className="filter-container">
+      <Typography variant="body1" sx={{marginRight:"10px"}}>
+        Filter :-
+      </Typography>
+        <RadioGroup
+          row
+          aria-label="attendance-options"
+          name="attendance-options"
+          value={attendanceOption}
+          onChange={handleAttendanceOptionChange}
+        >
+          <FormControlLabel
+            value="Present"
+            control={<Radio />}
+            label="Present"
+          />
+          <FormControlLabel
+            value="Absent"
+            control={<Radio />}
+            label="Absent"
+          />
+        </RadioGroup>
+      </div>
+    
+      </div>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
