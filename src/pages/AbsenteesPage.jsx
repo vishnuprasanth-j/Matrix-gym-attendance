@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../lib/firebase";
@@ -39,41 +39,65 @@ const AbsenteesPage = () => {
   useEffect(() => {
     const fetchAbsentees = async () => {
       try {
-        const membersRef = collection(db, "members");
-        let q = query(membersRef);
-        if (branch) {
-          q = query(q, where("branch", "==", branch));
-        }
-        const querySnapshot = await getDocs(q);
-        const absenteesData = [];
-        querySnapshot.forEach((doc) => {
-          const member = doc.data();
-          const formattedDate = formatDate(selectedDate);
-
-          if (
-            // Check if the member belongs to the selected batch and is absent on the selected date
-            member.batch === selectedBatch &&
-            (attendanceOption === "Present"
-              ? member.attendance && member.attendance.includes(formattedDate)
-              : !member.attendance || !member.attendance.includes(formattedDate))
-          ) {
-            absenteesData.push({
-              id: doc.id,
-              name: member.name,
-              phone: member.phone,
-              gender: member.gender,
-            });
+        let absenteesData = [];
+  
+        const localMembers = localStorage.getItem("absentees");
+        if (localMembers) {
+          const membersData = JSON.parse(localMembers);
+          membersData.forEach((member) => {
+            const formattedDate = formatDate(selectedDate);
+            if (
+              member.branch === branch &&
+              member.batch === selectedBatch &&
+              (attendanceOption === "Present"
+                ? member.attendance && member.attendance.includes(formattedDate)
+                : !member.attendance || !member.attendance.includes(formattedDate))
+            ) {
+              absenteesData.push({
+                id: member.id,
+                name: member.name,
+                phone: member.phone,
+                regno: member.regno,
+              });
+            }
+          });
+        } else {
+          const membersRef = collection(db, "members");
+          let q = query(membersRef);
+          if (branch) {
+            q = query(q, where("branch", "==", branch));
           }
-        });
+          const querySnapshot = await getDocs(q);
+  
+          querySnapshot.forEach((doc) => {
+            const member = doc.data();
+            const formattedDate = formatDate(selectedDate);
+  
+            if (
+              member.batch === selectedBatch &&
+              (attendanceOption === "Present"
+                ? member.attendance && member.attendance.includes(formattedDate)
+                : !member.attendance || !member.attendance.includes(formattedDate))
+            ) {
+              absenteesData.push({
+                id: doc.id,
+                name: member.name,
+                phone: member.phone,
+                regno: member.regno,
+              });
+            }
+          });
+        }
+  
         setAbsentees(absenteesData);
       } catch (error) {
         console.error("Error fetching absentees: ", error);
       }
     };
-
+  
     fetchAbsentees();
   }, [branch, selectedBatch, selectedDate, attendanceOption]);
-
+  
 
   const formatDate = (date) => {
     const day = date.getDate();
@@ -169,6 +193,11 @@ const AbsenteesPage = () => {
         <Table>
           <TableHead>
             <TableRow>
+            <TableCell>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  RegNo.
+                </Typography>
+              </TableCell>
               <TableCell>
                 <Typography variant="subtitle1" fontWeight="bold">
                   Name
@@ -177,11 +206,6 @@ const AbsenteesPage = () => {
               <TableCell>
                 <Typography variant="subtitle1" fontWeight="bold">
                   Phone
-                </Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="subtitle1" fontWeight="bold">
-                  Gender
                 </Typography>
               </TableCell>
               <TableCell align="center">
@@ -196,9 +220,9 @@ const AbsenteesPage = () => {
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((absentee) => (
                 <TableRow key={absentee.id}>
+                  <TableCell>{absentee.regno}</TableCell>
                   <TableCell>{absentee.name}</TableCell>
                   <TableCell>{absentee.phone}</TableCell>
-                  <TableCell>{absentee.gender}</TableCell>
                   <TableCell align="center">
                     <Link
                       to={`https://wa.me/91${absentee.phone}?text=Hi%20this%20is%20Matrix%20Gym.%20We%20missed%20you%20at%20the%20gym!%20Remember,%20consistency%20is%20key%20–%20looking%20forward%20to%20seeing%20you%20back%20soon!`}

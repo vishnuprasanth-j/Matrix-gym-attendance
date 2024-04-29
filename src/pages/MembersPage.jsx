@@ -1,5 +1,5 @@
 import "../styles/MembersPage.css";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   collection,
@@ -74,7 +74,7 @@ const MembersPage = () => {
     };
     fetchPlans();
   }, []);
- 
+
   useEffect(() => {
     const fetchMembers = async () => {
       try {
@@ -92,15 +92,40 @@ const MembersPage = () => {
         console.error("Error fetching members: ", error);
       }
     };
-     fetchMembers();
+    fetchMembers();
   }, [branch]);
+
+  useEffect(() => {
+    if (members.length > 0) {
+      localStorage.removeItem("absentees");
+      localStorage.setItem("absentees", JSON.stringify(members));
+    }
+  }, [members]);
 
   useEffect(() => {
     const filteredMembers = members.filter((member) =>
       member.regno.includes(searchQuery.toLowerCase())
     );
     setSortedMembers(filteredMembers);
-  }, [searchQuery,members]);
+  }, [searchQuery, members]);
+
+  const fetchMembers = async () => {
+    try {
+      const membersRef = collection(db, "members");
+      const q = branch
+        ? query(membersRef, where("branch", "==", branch))
+        : membersRef;
+      const querySnapshot = await getDocs(q);
+      const membersData = [];
+      querySnapshot.forEach((doc) => {
+        membersData.push({ id: doc.id, ...doc.data() });
+      });
+      setMembers(membersData);
+    } catch (error) {
+      console.error("Error fetching members: ", error);
+    }
+  };
+
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -115,12 +140,10 @@ const MembersPage = () => {
     setPage(0);
   };
 
- 
-
   const isPlanExpired = (planHistory) => {
-    const currPlanEnd = planHistory[planHistory.length-1].planEnd.toDate();
+    const currPlanEnd = planHistory[planHistory.length - 1].planEnd.toDate();
     const now = new Date();
-    return now > currPlanEnd; 
+    return now > currPlanEnd;
   };
 
   const sortedAndPaginatedMembers = sortedMembers.slice(
@@ -145,7 +168,7 @@ const MembersPage = () => {
     setIsRenewMemberModalOpen(false);
   };
 
-  const handleRenewMember = async (newPlan,duration) => {
+  const handleRenewMember = async (newPlan, duration) => {
     try {
       if (!selectedMember) return;
 
@@ -153,15 +176,14 @@ const MembersPage = () => {
 
       let planEndTS;
       const currPlanStartDt = new Date();
-      planEndTS = new Date(currPlanStartDt)
-      planEndTS.setMonth(planEndTS.getMonth() + duration)
+      planEndTS = new Date(currPlanStartDt);
+      planEndTS.setMonth(planEndTS.getMonth() + duration);
       planEndTS = Timestamp.fromDate(planEndTS);
 
       let updatedplanHistory = {
         plan: newPlan,
         planStart: Timestamp.now(),
         planEnd: planEndTS,
-        
       };
 
       await updateDoc(memberRef, {
@@ -169,14 +191,15 @@ const MembersPage = () => {
         currPlanStart: Timestamp.now(),
         planHistory: [...selectedMember.planHistory, updatedplanHistory],
       });
+      fetchMembers();
       setIsRenewMemberModalOpen(false);
     } catch (error) {
       console.error("Error renewing member:", error);
     }
   };
 
-  const daysLeft = ( planHistory) => {
-    const currPlanEnd = planHistory[planHistory.length-1].planEnd.toDate();
+  const daysLeft = (planHistory) => {
+    const currPlanEnd = planHistory[planHistory.length - 1].planEnd.toDate();
     const now = new Date();
     const diffInDays = differenceInDays(currPlanEnd, now);
     if (diffInDays <= 0) {
@@ -218,8 +241,8 @@ const MembersPage = () => {
       const memberRef = doc(db, "members", selectedMember.id);
       await deleteDoc(memberRef);
       setMembers((prevMembers) =>
-      prevMembers.filter((member) => member.id !== selectedMember.id)
-    );
+        prevMembers.filter((member) => member.id !== selectedMember.id)
+      );
 
       setIsDeleteModalOpen(false);
     } catch (error) {
@@ -245,8 +268,7 @@ const MembersPage = () => {
       if (!isTimestamp(dobTimestamp)) {
         dobTimestamp = Timestamp.fromDate(new Date(editedMember.dob));
       }
-  
-      
+
       if (photoName) {
         const storageRef = ref(storage, `files/${photoName}`);
         await uploadBytes(storageRef, editedMember.photo);
@@ -254,7 +276,6 @@ const MembersPage = () => {
 
         editedMember.photo = newPhotoURL;
       }
-  
 
       const memberRef = doc(db, "members", editedMember.id);
 
@@ -262,13 +283,13 @@ const MembersPage = () => {
         ...editedMember,
         dob: dobTimestamp,
       });
-  
+      fetchMembers()
       console.log("Document successfully updated!");
     } catch (error) {
       console.error("Error updating document: ", error);
     }
   };
-  
+
   return (
     <div className="memberspage-container">
       <div className="memberspage-btn-container">
@@ -322,17 +343,15 @@ const MembersPage = () => {
                 }}
                 className="bd"
               >
-               <TableCell>{member.regno}</TableCell>
+                <TableCell>{member.regno}</TableCell>
                 <TableCell onClick={() => handleRowClick(member)}>
                   {member.name}
                 </TableCell>
                 <TableCell>{member.age}</TableCell>
                 <TableCell>{member.batch}</TableCell>
                 <TableCell>{member.phone}</TableCell>
-              
-                <TableCell>
-                  {daysLeft(member.planHistory)}
-                </TableCell>
+
+                <TableCell>{daysLeft(member.planHistory)}</TableCell>
 
                 <TableCell align="center">
                   <Button onClick={() => handleEditOpen(member)}>
@@ -344,9 +363,7 @@ const MembersPage = () => {
                   >
                     <FontAwesomeIcon icon={faTrash} />
                   </Button>
-                  {isPlanExpired(
-                    member.planHistory
-                  ) ? (
+                  {isPlanExpired(member.planHistory) ? (
                     <Button
                       style={{ color: "red" }}
                       onClick={() => handleRenewButtonClick(member)}

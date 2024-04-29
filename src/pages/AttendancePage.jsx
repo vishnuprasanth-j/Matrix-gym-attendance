@@ -9,7 +9,7 @@ import {
   TextField,
 } from "@mui/material";
 import "../styles/AttendancePage.css";
-import { useState } from "react";
+import { useState ,useEffect} from "react";
 import {
   arrayUnion,
   collection,
@@ -29,6 +29,18 @@ const AttendancePage = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [memberDoc, setMemberDoc] = useState();
 
+  useEffect(()=>{
+return async()=>{
+  const membersRef = collection(db, "members")
+  const querySnapshot = await getDocs(membersRef);
+  const membersData = [];
+  querySnapshot.forEach((doc) => {
+    membersData.push({ id: doc.id, ...doc.data() });
+  });
+  localStorage.removeItem("absentees")
+  localStorage.setItem("absentees",JSON.stringify(membersData))
+}
+  },[])
   const handleRegNumberChange = (event) => {
     setRegNumber(event.target.value);
   };
