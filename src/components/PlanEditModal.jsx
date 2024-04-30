@@ -43,7 +43,7 @@ const PlanEditModal = ({ open, handleClose, plan }) => {
       <DialogTitle>Edit Plan</DialogTitle>
       <DialogContent>
         <TextField
-          name="sn"
+          name="dn"
           label="Display Name"
           value={editedPlan.dn}
           onChange={handleChange}

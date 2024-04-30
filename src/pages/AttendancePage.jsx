@@ -9,7 +9,7 @@ import {
   TextField,
 } from "@mui/material";
 import "../styles/AttendancePage.css";
-import { useState ,useEffect} from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   arrayUnion,
   collection,
@@ -28,19 +28,20 @@ const AttendancePage = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [memberDoc, setMemberDoc] = useState();
+  const regInputRef = useRef();
 
-  useEffect(()=>{
-return async()=>{
-  const membersRef = collection(db, "members")
-  const querySnapshot = await getDocs(membersRef);
-  const membersData = [];
-  querySnapshot.forEach((doc) => {
-    membersData.push({ id: doc.id, ...doc.data() });
-  });
-  localStorage.removeItem("absentees")
-  localStorage.setItem("absentees",JSON.stringify(membersData))
-}
-  },[])
+  useEffect(() => {
+    return async () => {
+      const membersRef = collection(db, "members");
+      const querySnapshot = await getDocs(membersRef);
+      const membersData = [];
+      querySnapshot.forEach((doc) => {
+        membersData.push({ id: doc.id, ...doc.data() });
+      });
+      localStorage.removeItem("absentees");
+      localStorage.setItem("absentees", JSON.stringify(membersData));
+    };
+  }, []);
   const handleRegNumberChange = (event) => {
     setRegNumber(event.target.value);
   };
@@ -67,6 +68,10 @@ return async()=>{
         setTimeout(() => {
           setErrorMessage("");
         }, 4000);
+        setRegNumber("");
+        setTimeout(() => {
+          regInputRef.current.focus();
+      }, 100);
         return;
       }
       const memberDoc = membersQuerySnapshot.docs[0];
@@ -107,11 +112,17 @@ return async()=>{
         setErrorMessage("Attendance already marked for today");
         setOpenDialog(false);
         setRegNumber("");
-      }else{
+        setTimeout(() => {
+          regInputRef.current.focus();
+      }, 100);
+      } else {
         await updateDoc(memberDoc.ref, { attendance: arrayUnion(today) });
         setSuccessMessage("Attendance marked successfully");
         setRegNumber("");
         setOpenDialog(false);
+        setTimeout(() => {
+          regInputRef.current.focus();
+      }, 100);
       }
       setTimeout(() => {
         setSuccessMessage("");
@@ -168,6 +179,7 @@ return async()=>{
                     name="reg-id"
                     value={regNumber}
                     onChange={handleRegNumberChange}
+                    ref={regInputRef}
                     required
                     autoFocus
                   />

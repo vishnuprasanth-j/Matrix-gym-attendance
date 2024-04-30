@@ -33,6 +33,8 @@ const PlanEditPage = () => {
           plansData.push({ id: doc.id, ...doc.data() });
         });
         setPlans(plansData);
+        localStorage.removeItem("plans");
+        localStorage.setItem("plans", JSON.stringify(plansData));
       } catch (error) {
         console.error("Error fetching plans: ", error);
       }

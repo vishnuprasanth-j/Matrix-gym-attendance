@@ -10,10 +10,7 @@ import {
   Radio,
   Grid,
   Typography,
-  Select,
   MenuItem,
-  InputLabel,
-  Checkbox,
 } from "@mui/material";
 import { useState } from "react";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
@@ -97,8 +94,8 @@ const AddMemberModal = ({ open, handleClose, plans, updateMembers }) => {
       let dobTS = Timestamp.fromDate(new Date(memberData.dob));
       let planEndTS;
       planEndTS = new Date(memberData.currPlanStart);
+      console.log(planEndTS,selectedPlan.duration)
       planEndTS.setMonth(planEndTS.getMonth() + selectedPlan.duration);
-
       let plArray = [];
       plArray.push({
         plan: memberData.currentPlan,
