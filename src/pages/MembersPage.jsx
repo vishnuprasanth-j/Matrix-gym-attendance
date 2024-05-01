@@ -202,13 +202,11 @@ const MembersPage = () => {
     const currPlanEnd = planHistory[planHistory.length - 1].planEnd.toDate();
     const now = new Date();
     const diffInDays = differenceInDays(currPlanEnd, now);
+  
     if (diffInDays <= 0) {
       return "Expired";
-    } else if (diffInDays <= 30) {
-      return `${diffInDays}d`;
     } else {
-      const futureDate = addMonths(currPlanEnd, 1);
-      return formatDistanceToNow(futureDate, { addSuffix: true });
+      return `${diffInDays}d`;
     }
   };
 

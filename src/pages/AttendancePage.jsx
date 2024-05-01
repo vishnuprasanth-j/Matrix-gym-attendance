@@ -20,6 +20,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import POINTS from "/points.png";
+import { addMonths, differenceInDays, formatDistanceToNow } from "date-fns";
 
 const AttendancePage = () => {
   const [regNumber, setRegNumber] = useState("");
@@ -46,18 +47,32 @@ const AttendancePage = () => {
     setRegNumber(event.target.value);
   };
 
-  const calculateDaysLeft = (endDate, startDate) => {
-    const end = endDate.toDate();
-    const start = startDate.toDate();
-    const difference = end.getTime() - start.getTime();
-    const daysLeft = Math.ceil(difference / (1000 * 3600 * 24));
-
-    if (daysLeft > 30) {
-      const months = Math.floor(daysLeft / 30);
-      return `${months} month${months > 1 ? "s" : ""}`;
+  const calculateDaysLeft=(plEnd)=>{
+    const currPlanEnd =plEnd.toDate();
+    const now = new Date();
+    const diffInDays = differenceInDays(currPlanEnd, now);
+    console.log(diffInDays)
+    if (diffInDays <= 0) {
+      return "Expired";
+    } else if (diffInDays <= 30) {
+      return `${diffInDays}d`;
+    } else {
+      const futureDate = addMonths(currPlanEnd, 1);
+      return formatDistanceToNow(futureDate, { addSuffix: true });
     }
-    return `${daysLeft} day${daysLeft === 1 ? "" : "s"}`;
-  };
+  } 
+  // const calculateDaysLeft = (endDate, startDate) => {
+  //   const end = endDate.toDate();
+  //   const start = startDate.toDate();
+  //   const difference = end.getTime() - start.getTime();
+  //   const daysLeft = Math.ceil(difference / (1000 * 3600 * 24));
+
+  //   if (daysLeft > 30) {
+  //     const months = Math.floor(daysLeft / 30);
+  //     return `${months} month${months > 1 ? "s" : ""}`;
+  //   }
+  //   return `${daysLeft} day${daysLeft === 1 ? "" : "s"}`;
+  // };
   const handleAttendanceSubmit = async () => {
     try {
       const membersQuerySnapshot = await getDocs(
@@ -85,7 +100,7 @@ const AttendancePage = () => {
       setMemberDetails({
         name: memberDoc.data().name,
         planExpiryDate: currPlanEnd.toDate().toLocaleDateString("en-GB"),
-        daysLeft: calculateDaysLeft(currPlanEnd, currPlanStart),
+        daysLeft: calculateDaysLeft(currPlanEnd),
         batch: memberDoc.data().batch,
       });
       setOpenDialog(true);
