@@ -68,7 +68,7 @@ const AttendancePage = () => {
         setTimeout(() => {
           setErrorMessage("");
         }, 4000);
-        setRegNumber("");
+         setRegNumber("");
         setTimeout(() => {
           regInputRef.current.focus();
       }, 100);
@@ -84,7 +84,7 @@ const AttendancePage = () => {
       setMemberDoc(memberDoc);
       setMemberDetails({
         name: memberDoc.data().name,
-        planExpiryDate: currPlanEnd.toDate().toLocaleDateString(),
+        planExpiryDate: currPlanEnd.toDate().toLocaleDateString("en-GB"),
         daysLeft: calculateDaysLeft(currPlanEnd, currPlanStart),
         batch: memberDoc.data().batch,
       });

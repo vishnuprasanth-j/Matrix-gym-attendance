@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import '../styles/HomePage.css';
+import { collection, query, getDocs, deleteDoc, doc, writeBatch} from "firebase/firestore";
+import { db } from  '../lib/firebase';
 
 const HomePage = () => {
 
