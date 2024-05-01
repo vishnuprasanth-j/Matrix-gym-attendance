@@ -52,12 +52,14 @@ const PlanEditPage = () => {
   };
 
   const handleEditPlan = (plan) => {
+    console.log('Opening modal for plan:', plan);
     setSelectedPlan(plan);
     setEditModalOpen(true);
   };
 
   const handleCloseEditModal = () => {
     setEditModalOpen(false);
+    setSelectedPlan(null);
   };
 
   return (

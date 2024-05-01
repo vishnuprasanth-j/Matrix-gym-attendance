@@ -57,6 +57,7 @@ const PlanEditModal = ({ open, handleClose, plan }) => {
         <TextField
           name="duration"
           label="Duration"
+          type="number"
           value={editedPlan.duration}
           onChange={handleChange}
           fullWidth
