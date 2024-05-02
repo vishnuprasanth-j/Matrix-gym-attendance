@@ -13,47 +13,59 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
-  CircularProgress
+  CircularProgress,
+  Checkbox,
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
+import { Timestamp } from "firebase/firestore";
 
 const convertTimestampToString = (timestamp) => {
   if (!timestamp || typeof timestamp.seconds !== "number") {
-    return "";
+    return  timestamp;
   }
   const date = new Date(timestamp.seconds * 1000); // Convert seconds to milliseconds
   return date.toISOString().substring(0, 10); // Format YYYY-MM-DD
 };
 
-const EditMemberModal = ({ open, handleClose, memberData, handleEdit }) => {
+const EditMemberModal = ({
+  open,
+  handleClose,
+  memberData,
+  handleEdit,
+  plans,
+}) => {
+  console.log(plans);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    regno:"",
-    id:"",
-    photo:"",
+    regno: "",
+    id: "",
+    photo: "",
     name: "",
     age: "",
     bloodgroup: "",
     branch: "",
-    currentPlan: "",
     dob: "",
     gender: "",
     height: "",
     phone: "",
     weight: "",
-    currPlanStart: "",
     address: "",
+  });
+  const [hidformData, setHidFormData] = useState({
+    currentPlan: "",
+    currPlanStart: "",
+    planHistory: "",
   });
   const [isHovered, setIsHovered] = useState(false);
   const [photoName, setPhotoName] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
-
+  const [changePlan, setChangePlan] = useState(false);
   useEffect(() => {
     if (memberData) {
       setFormData({
-        regno:memberData.regno|| "",
-        id:memberData.id || "",
+        regno: memberData.regno || "",
+        id: memberData.id || "",
         name: memberData.name || "",
         age: memberData.age || "",
         bloodgroup: memberData.bloodgroup || "",
@@ -72,10 +84,59 @@ const EditMemberModal = ({ open, handleClose, memberData, handleEdit }) => {
         // planHistory:memberData.planHistory || "",
         // memberSince: memberData.memberSince || ""
       });
-      setPhotoUrl(memberData.photo || "")
+      setHidFormData({
+        currentPlan: memberData.currentPlan || "",
+        currPlanStart:  memberData?.currPlanStart || "",
+        planHistory: memberData.planHistory || "",
+      });
+      setPhotoUrl(memberData.photo || "");
+      console.log(hidformData);
     }
   }, [memberData]);
-  
+  const handleHidChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "currentPlan") {
+      const selectedPlan = plans.find((plan) => plan.dn === value);
+      const durationInMonths = selectedPlan ? selectedPlan.duration : 0;
+      const currPlanStartDate = new Date(convertTimestampToString(hidformData.currPlanStart));
+
+      const planEndDate = new Date(currPlanStartDate);
+      planEndDate.setMonth(planEndDate.getMonth() + durationInMonths);
+
+      const updatedPlanHistory = [...hidformData.planHistory];
+      if (updatedPlanHistory.length > 0) {
+        const lastPlan = updatedPlanHistory[updatedPlanHistory.length - 1];
+        lastPlan.plan = value;
+        lastPlan.amount = selectedPlan.amount;
+        lastPlan.planEnd = Timestamp.fromDate(planEndDate);
+      }
+      setHidFormData({
+        ...hidformData,
+        currentPlan: value,
+        planHistory: updatedPlanHistory,
+      });
+    } else {
+      const selectedPlan = plans.find((plan) => plan.dn === hidformData.currentPlan);
+      const durationInMonths = selectedPlan ? selectedPlan.duration : 0;
+      const currPlanStartDate = new Date(value);
+
+      const planEndDate = new Date(currPlanStartDate);
+      planEndDate.setMonth(planEndDate.getMonth() + durationInMonths);
+
+      const updatedPlanHistory = [...hidformData.planHistory];
+      if (updatedPlanHistory.length > 0) {
+        const lastPlan = updatedPlanHistory[updatedPlanHistory.length - 1];
+        lastPlan.amount = selectedPlan.amount;
+        lastPlan.planStart=Timestamp.fromDate(currPlanStartDate);
+        lastPlan.planEnd = Timestamp.fromDate(planEndDate);
+      }
+      setHidFormData({
+        ...hidformData,
+        currPlanStart: Timestamp.fromDate(currPlanStartDate),
+        planHistory: updatedPlanHistory,
+      });
+    }
+  };
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -84,7 +145,16 @@ const EditMemberModal = ({ open, handleClose, memberData, handleEdit }) => {
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
-      await handleEdit(formData,memberData,photoName);
+      if(changePlan){
+        const formDataWplan={
+          ...formData,
+          ...hidformData
+        }
+        await handleEdit(formDataWplan, memberData, photoName);
+      }else{
+        await handleEdit(formData, memberData, photoName);
+      }
+   
     } catch (error) {
       console.error("An error occurred during the update:", error);
     }
@@ -101,21 +171,20 @@ const EditMemberModal = ({ open, handleClose, memberData, handleEdit }) => {
     if (photoFile) {
       setFormData((prevData) => ({
         ...prevData,
-        photo:photoFile,
+        photo: photoFile,
       }));
       setPhotoName(photoFile.name);
       const reader = new FileReader();
       reader.onload = (e) => {
-        setPhotoUrl(e.target.result)
+        setPhotoUrl(e.target.result);
       };
       reader.readAsDataURL(photoFile);
     }
   };
-  
 
-const handleEditPhoto=()=>{
-  document.getElementById("photoInput").click();
-}
+  const handleEditPhoto = () => {
+    document.getElementById("photoInput").click();
+  };
   return (
     <Dialog open={open} onClose={handleClose}>
       <DialogTitle>
@@ -152,10 +221,10 @@ const handleEditPhoto=()=>{
                     top: "50%",
                     left: "50%",
                     transform: "translate(-50%, -50%)",
-                    opacity:1,
+                    opacity: 1,
                   }}
                 >
-                  <FontAwesomeIcon icon={faPen}/>
+                  <FontAwesomeIcon icon={faPen} />
                 </div>
               )}
             </div>
@@ -308,6 +377,46 @@ const handleEditPhoto=()=>{
               fullWidth
             />
           </Grid>
+          <Grid item xs={6}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={changePlan}
+                  onChange={(e) => setChangePlan(e.target.checked)}
+                />
+              }
+              label="Change Plan"
+            />
+          </Grid>
+          {changePlan && (
+            <>
+              <Grid item xs={6}>
+                <Select
+                  label="Current Plan"
+                  name="currentPlan"
+                  value={hidformData.currentPlan}
+                  onChange={handleHidChange}
+                  fullWidth
+                >
+                  {plans.map((plan) => (
+                    <MenuItem key={plan.id} value={plan.dn}>
+                      {plan.dn}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  label="Plan Start"
+                  type="date"
+                  name="currPlanStart"
+                  value={convertTimestampToString(hidformData.currPlanStart)}
+                  onChange={handleHidChange}
+                  fullWidth
+                />
+              </Grid>
+            </>
+          )}
         </Grid>
       </DialogContent>
       <DialogActions>
@@ -319,7 +428,12 @@ const handleEditPhoto=()=>{
         >
           {isLoading ? <CircularProgress size={24} /> : "Submit"}
         </Button>
-        <Button onClick={handleClose} variant="outlined" color="secondary" disabled={isLoading}>
+        <Button
+          onClick={handleClose}
+          variant="outlined"
+          color="secondary"
+          disabled={isLoading}
+        >
           Cancel
         </Button>
       </DialogActions>

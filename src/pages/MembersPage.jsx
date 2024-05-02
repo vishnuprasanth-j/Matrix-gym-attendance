@@ -416,6 +416,7 @@ const MembersPage = () => {
         handleClose={handleEditClose}
         memberData={editMemberData}
         handleEdit={handleEditMember}
+        plans={plans}
       />
     </div>
   );

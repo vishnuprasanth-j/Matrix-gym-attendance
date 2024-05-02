@@ -6,14 +6,15 @@ import {
   DialogActions,
   Button,
   TextField,
+  InputBase,
 } from "@mui/material";
 import { updateDoc, doc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
 const PlanEditModal = ({ open, handleClose, plan }) => {
-    if(!plan){
-        return
-    }
+  if (!plan) {
+    return;
+  }
   const [editedPlan, setEditedPlan] = useState({
     dn: plan.dn,
     duration: plan.duration,
@@ -22,24 +23,31 @@ const PlanEditModal = ({ open, handleClose, plan }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    const isNumberField = name === "duration";
     setEditedPlan((prevPlan) => ({
       ...prevPlan,
-      [name]: value,
+      [name]: isNumberField ? Number(value) : value,
     }));
   };
 
   const handleSubmit = async () => {
     try {
-      const planRef = doc(db, "plans", plan.id);
-      await updateDoc(planRef, editedPlan);
+      console.log(editedPlan);
+      // const planRef = doc(db, "plans", plan.id);
+      // await updateDoc(planRef, editedPlan);
       handleClose();
     } catch (error) {
       console.error("Error updating plan:", error);
     }
   };
+  const handleKeyPress = (e) => {
+    if (!/[0-9]/.test(e.key) && e.key !== "Backspace" && e.key !== "ArrowLeft" && e.key !== "ArrowRight") {
+      e.preventDefault();
+    }
+  };
 
   return (
-    <Dialog open={open} onClose={handleClose} >
+    <Dialog open={open} onClose={handleClose}>
       <DialogTitle>Edit Plan</DialogTitle>
       <DialogContent>
         <TextField
@@ -50,20 +58,20 @@ const PlanEditModal = ({ open, handleClose, plan }) => {
           fullWidth
           required
           sx={{
-            marginBottom:"10px",
-            marginTop:"10px"
+            marginBottom: "10px",
+            marginTop: "10px",
           }}
         />
         <TextField
           name="duration"
           label="Duration"
-          type="number"
           value={editedPlan.duration}
           onChange={handleChange}
+          onKeyDown={handleKeyPress} 
           fullWidth
           required
           sx={{
-            marginBottom:"10px"
+            marginBottom: "10px",
           }}
         />
         <TextField
@@ -74,7 +82,7 @@ const PlanEditModal = ({ open, handleClose, plan }) => {
           fullWidth
           required
           sx={{
-            marginBottom:"10px"
+            marginBottom: "10px",
           }}
         />
       </DialogContent>
