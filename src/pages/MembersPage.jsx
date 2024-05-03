@@ -87,6 +87,7 @@ const MembersPage = () => {
         querySnapshot.forEach((doc) => {
           membersData.push({ id: doc.id, ...doc.data() });
         });
+        membersData.sort((a, b) => a.regno.localeCompare(b.regno));
         setMembers(membersData);
       } catch (error) {
         console.error("Error fetching members: ", error);
@@ -119,7 +120,8 @@ const MembersPage = () => {
       const membersData = [];
       querySnapshot.forEach((doc) => {
         membersData.push({ id: doc.id, ...doc.data() });
-      });
+      });      
+      membersData.sort((a, b) => a.regno.localeCompare(b.regno));
       setMembers(membersData);
     } catch (error) {
       console.error("Error fetching members: ", error);
