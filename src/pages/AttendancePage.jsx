@@ -54,12 +54,9 @@ const AttendancePage = () => {
     console.log(diffInDays)
     if (diffInDays <= 0) {
       return "Expired";
-    } else if (diffInDays <= 30) {
+    } else  {
       return `${diffInDays}d`;
-    } else {
-      const futureDate = addMonths(currPlanEnd, 1);
-      return formatDistanceToNow(futureDate, { addSuffix: true });
-    }
+    } 
   } 
   // const calculateDaysLeft = (endDate, startDate) => {
   //   const end = endDate.toDate();
