@@ -289,6 +289,15 @@ const MembersPage = () => {
       console.error("Error updating document: ", error);
     }
   };
+  const CalculateBalance=(paid,currplan)=>{
+     const selectedPlan=plans.find(plan=>plan.dn===currplan);
+     if(!selectedPlan){
+      return ""
+     }
+     const selectedPlanAmount=selectedPlan.amount;
+     const diff= Number(selectedPlanAmount)-Number(paid)
+     return diff===0 ? "Nil" : diff;
+  }
 
   return (
     <div className="memberspage-container">
@@ -331,6 +340,7 @@ const MembersPage = () => {
               <TableCell>Batch</TableCell>
               <TableCell>Phone</TableCell>
               <TableCell>Days Left</TableCell>
+              <TableCell>Balance</TableCell>
               <TableCell align="center">Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -352,7 +362,7 @@ const MembersPage = () => {
                 <TableCell>{member.phone}</TableCell>
 
                 <TableCell>{daysLeft(member.planHistory)}</TableCell>
-
+                <TableCell>{CalculateBalance(member.planHistory[member.planHistory.length-1].amount,member.planHistory[member.planHistory.length-1].plan)}</TableCell>
                 <TableCell align="center">
                   <Button onClick={() => handleEditOpen(member)}>
                     <FontAwesomeIcon icon={faPen} />

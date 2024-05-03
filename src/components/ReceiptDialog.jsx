@@ -10,43 +10,47 @@ import {
   TableCell,
   TableRow,
   TableContainer,
+  Avatar,
 } from "@mui/material";
 import html2pdf from "html2pdf.js";
-
-const ReceiptDialog = ({ open, onClose, receiptData}) => {
+import Logo from "/logo_transparent.png";
+import POINTS from "/points.png";
+const ReceiptDialog = ({ open, onClose, receiptData }) => {
   if (!receiptData) {
     return null;
   }
- const{name,planHistory,currentPlan,phone}=receiptData;
+  const { name, planHistory, currentPlan, phone } = receiptData;
   const handleDownload = () => {
     const element = document.getElementById("receipt-content");
     const opt = {
       margin: [0.5, 0.5],
-      filename: 'MATRIX_Gym_Receipt.pdf',
+      filename: "MATRIX_Gym_Receipt.pdf",
       jsPDF: {
-        unit: 'px', 
-        format: [400,400] 
-      }
+        unit: "px",
+        format: [600, 600],
+        image: { type: 'jpeg', quality: 1.00 } 
+      },
     };
     html2pdf().set(opt).from(element).save();
   };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        Receipt
-      </DialogTitle>
+      <DialogTitle>Receipt</DialogTitle>
       <DialogContent id="receipt-content">
-        <Typography variant="h6" gutterBottom  sx={{ textAlign: 'center' }}>
-          Matrix Gym
+      <DialogTitle style={{ display: 'flex', alignItems: 'center' }}>
+        <Avatar src={Logo} alt="Logo" sx={{ width: 24, height: 24, backgroundColor: 'black' }} />
+        <Typography variant="h6" style={{ marginLeft: '8px', flexGrow: 1 }}>Matrix Fitness Center</Typography>
+        <Typography variant="subtitle2" style={{ float: "right" }}>
+          {planHistory[planHistory.length - 1].planStart
+            .toDate()
+            .toLocaleDateString("en-GB")}
         </Typography>
-        <Typography variant="subtitle2" gutterBottom style={{ float: 'right' }}>
-          {planHistory[planHistory.length-1].planStart.toDate().toLocaleDateString('en-GB')}
-        </Typography>
+      </DialogTitle>
         <TableContainer>
-          <Table   sx={{ border: '2px solid #ccc', borderRadius: '8px' }}>
+          <Table sx={{ border: "2px solid #ccc", borderRadius: "8px" }}>
             <TableBody>
-              <TableRow  sx={{marginBottom:"5px" }}>
+              <TableRow sx={{ marginBottom: "5px" }}>
                 <TableCell>Name:</TableCell>
                 <TableCell>{name}</TableCell>
               </TableRow>
@@ -56,27 +60,30 @@ const ReceiptDialog = ({ open, onClose, receiptData}) => {
               </TableRow>
               <TableRow>
                 <TableCell>Plan:</TableCell>
-                <TableCell>
-                 {currentPlan}
-                </TableCell>
+                <TableCell>{currentPlan}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Plan End</TableCell>
                 <TableCell>
-                 {planHistory[planHistory.length-1].planEnd.toDate().toLocaleDateString('en-GB')}
+                  {planHistory[planHistory.length - 1].planEnd
+                    .toDate()
+                    .toLocaleDateString("en-GB")}
                 </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Amount</TableCell>
                 <TableCell>
-                 {planHistory[planHistory.length-1].amount}
+                  {planHistory[planHistory.length - 1].amount}
                 </TableCell>
               </TableRow>
             </TableBody>
           </Table>
         </TableContainer>
+        <Typography variant="body2" color="textSecondary" gutterBottom>
+          Note: In any case, amount will not be refunded.
+        </Typography>
       </DialogContent>
-      <DialogActions sx={{ justifyContent: 'center' }}>
+      <DialogActions sx={{ justifyContent: "center" }}>
         <Button onClick={onClose}>Close</Button>
         <Button variant="contained" color="primary" onClick={handleDownload}>
           Download Receipt
