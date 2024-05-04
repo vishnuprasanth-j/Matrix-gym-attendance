@@ -39,7 +39,7 @@ const ReceiptDialog = ({ open, onClose, receiptData }) => {
       <DialogTitle>Receipt</DialogTitle>
       <DialogContent id="receipt-content">
       <DialogTitle style={{ display: 'flex', alignItems: 'center' }}>
-        <Avatar src={Logo} alt="Logo" sx={{ width: 24, height: 24, backgroundColor: 'black' }} />
+        <Avatar src={Logo} alt="Logo" sx={{ width: 56, height: 56, backgroundColor: 'black' }} />
         <Typography variant="h6" style={{ marginLeft: '8px', flexGrow: 1 }}>Matrix Fitness Center</Typography>
         <Typography variant="subtitle2" style={{ float: "right" }}>
           {planHistory[planHistory.length - 1].planStart
