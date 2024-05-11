@@ -61,6 +61,8 @@ const EditMemberModal = ({
   const [photoName, setPhotoName] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [changePlan, setChangePlan] = useState(false);
+  const [amount, setAmount] = useState("");
+
   useEffect(() => {
     if (memberData) {
       setFormData({
@@ -89,6 +91,7 @@ const EditMemberModal = ({
         currPlanStart:  memberData?.currPlanStart || "",
         planHistory: memberData.planHistory || "",
       });
+      setAmount(memberData.planHistory[memberData.planHistory.length-1].amount)
       setPhotoUrl(memberData.photo || "");
       console.log(hidformData);
     }
@@ -99,7 +102,7 @@ const EditMemberModal = ({
       const selectedPlan = plans.find((plan) => plan.dn === value);
       const durationInMonths = selectedPlan ? selectedPlan.duration : 0;
       const currPlanStartDate = new Date(convertTimestampToString(hidformData.currPlanStart));
-
+    
       const planEndDate = new Date(currPlanStartDate);
       planEndDate.setMonth(planEndDate.getMonth() + durationInMonths);
 
@@ -115,6 +118,7 @@ const EditMemberModal = ({
         currentPlan: value,
         planHistory: updatedPlanHistory,
       });
+      setAmount(selectedPlan.amount)
     } else {
       const selectedPlan = plans.find((plan) => plan.dn === hidformData.currentPlan);
       const durationInMonths = selectedPlan ? selectedPlan.duration : 0;
@@ -126,7 +130,7 @@ const EditMemberModal = ({
       const updatedPlanHistory = [...hidformData.planHistory];
       if (updatedPlanHistory.length > 0) {
         const lastPlan = updatedPlanHistory[updatedPlanHistory.length - 1];
-        lastPlan.amount = selectedPlan.amount;
+        lastPlan.amount = amount;
         lastPlan.planStart=Timestamp.fromDate(currPlanStartDate);
         lastPlan.planEnd = Timestamp.fromDate(planEndDate);
       }
@@ -412,6 +416,15 @@ const EditMemberModal = ({
                   name="currPlanStart"
                   value={convertTimestampToString(hidformData.currPlanStart)}
                   onChange={handleHidChange}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  label="Amount"
+                  name="amount"
+                  value={amount}
+                  onChange={(e)=>{setAmount(e.target.value)}}
                   fullWidth
                 />
               </Grid>

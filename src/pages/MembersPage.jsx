@@ -121,7 +121,11 @@ const MembersPage = () => {
       querySnapshot.forEach((doc) => {
         membersData.push({ id: doc.id, ...doc.data() });
       });      
-      membersData.sort((a, b) => a.regno.localeCompare(b.regno));
+      membersData.sort((a, b) => {
+        const numA = Number(a.regno); 
+        const numB = Number(b.regno); 
+        return numA - numB;
+      });
       setMembers(membersData);
     } catch (error) {
       console.error("Error fetching members: ", error);
@@ -170,7 +174,7 @@ const MembersPage = () => {
     setIsRenewMemberModalOpen(false);
   };
 
-  const handleRenewMember = async (newPlan, duration) => {
+  const handleRenewMember = async (newPlan, duration, amount) => {
     try {
       if (!selectedMember) return;
 
@@ -186,6 +190,7 @@ const MembersPage = () => {
         plan: newPlan,
         planStart: Timestamp.now(),
         planEnd: planEndTS,
+        amount:amount
       };
 
       await updateDoc(memberRef, {
