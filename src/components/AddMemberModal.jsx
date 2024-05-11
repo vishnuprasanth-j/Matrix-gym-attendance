@@ -111,9 +111,7 @@ const AddMemberModal = ({ open, handleClose, plans, updateMembers }) => {
         currPlanStart: currPlanStartTS,
         dob: dobTS,
       };
-      console.log(memberWithallFields);
       await addMemberToFirestore(memberWithallFields);
-      console.log("Member added successfully!");
       updateMembers((prev) => [...prev, memberWithallFields]);
       setReceiptData(memberWithallFields)
       setSuccessMessage("Member successfully added!");

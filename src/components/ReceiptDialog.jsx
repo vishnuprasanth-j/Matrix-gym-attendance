@@ -13,7 +13,7 @@ import {
   Avatar,
 } from "@mui/material";
 import html2pdf from "html2pdf.js";
-import Logo from "/logo_transparent.png";
+import Logo2 from "/Logo2.png";
 
 const ReceiptDialog = ({ open, onClose, receiptData }) => {
   if (!receiptData) {
@@ -25,11 +25,11 @@ const ReceiptDialog = ({ open, onClose, receiptData }) => {
     const opt = {
       margin: [0.5, 0.5],
       filename: "MATRIX_Gym_Receipt.pdf",
-      jsPDF: {
-        unit: "px",
-        format: [600, 600],
-        image: { type: 'jpeg', quality: 1.00 } 
-      },
+      // jsPDF: {
+      //   unit: "px",
+      //   format: [600, 600],
+      //   image: { type: "jpeg", quality: 1.0 },
+      // },
     };
     html2pdf().set(opt).from(element).save();
   };
@@ -38,15 +38,22 @@ const ReceiptDialog = ({ open, onClose, receiptData }) => {
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Receipt</DialogTitle>
       <DialogContent id="receipt-content">
-      <DialogTitle style={{ display: 'flex', alignItems: 'center' }}>
-        <Avatar src={Logo} alt="Logo" sx={{ width: 56, height: 56, backgroundColor: 'black' }} />
-        <Typography variant="h6" style={{ marginLeft: '8px', flexGrow: 1 }}>Matrix Fitness Center</Typography>
-        <Typography variant="subtitle2" style={{ float: "right" }}>
-          {planHistory[planHistory.length - 1].planStart
-            .toDate()
-            .toLocaleDateString("en-GB")}
-        </Typography>
-      </DialogTitle>
+        <DialogTitle style={{ display: "flex", alignItems: "center" }}>
+          {/* <Avatar
+            src={Logo}
+            alt="Logo"
+            sx={{ width: 56, height: 56, backgroundColor: "black" }}
+          /> */}
+          <img src={Logo2} style={{width:'70px',height:'75px'}}></img>
+          <Typography variant="h6" style={{ marginLeft: "8px", flexGrow: 1, color:'#e69855' }}>
+            Matrix Fitness Center
+          </Typography>
+          <Typography variant="subtitle2" style={{ float: "right" }}>
+            {planHistory[planHistory.length - 1].planStart
+              .toDate()
+              .toLocaleDateString("en-GB")}
+          </Typography>
+        </DialogTitle>
         <TableContainer>
           <Table sx={{ border: "2px solid #ccc", borderRadius: "8px" }}>
             <TableBody>
@@ -63,7 +70,7 @@ const ReceiptDialog = ({ open, onClose, receiptData }) => {
                 <TableCell>{currentPlan}</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Plan End</TableCell>
+                <TableCell>Plan End:</TableCell>
                 <TableCell>
                   {planHistory[planHistory.length - 1].planEnd
                     .toDate()
@@ -71,7 +78,7 @@ const ReceiptDialog = ({ open, onClose, receiptData }) => {
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Amount</TableCell>
+                <TableCell>Amount:</TableCell>
                 <TableCell>
                   {planHistory[planHistory.length - 1].amount}
                 </TableCell>

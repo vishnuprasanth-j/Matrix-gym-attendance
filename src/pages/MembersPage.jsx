@@ -10,6 +10,7 @@ import {
   doc,
   Timestamp,
   deleteDoc,
+  getDoc,
 } from "firebase/firestore";
 import { db, storage } from "../lib/firebase"; // Assuming 'db' is your Firestore instance
 import {
@@ -177,7 +178,7 @@ const MembersPage = () => {
     setIsRenewMemberModalOpen(false);
   };
 
-  const handleRenewMember = async (newPlan, duration, amount) => {
+  const handleRenewMember = async (newPlan, duration, amount,setReceiptData) => {
     try {
       if (!selectedMember) return;
 
@@ -201,9 +202,11 @@ const MembersPage = () => {
         currPlanStart: Timestamp.now(),
         planHistory: [...selectedMember.planHistory, updatedplanHistory],
       });
+      const updatedDocSnapshot = await getDoc(memberRef);
+      const updatedDocData = updatedDocSnapshot.data();
+      setReceiptData(updatedDocData)
       fetchMembers();
-      setIsRenewMemberModalOpen(false);
-    } catch (error) {
+      } catch (error) {
       console.error("Error renewing member:", error);
     }
   };
@@ -359,7 +362,7 @@ const MembersPage = () => {
                 sx={{
                   cursor: "pointer",
                   backgroundColor:
-                    daysLeft(member.planHistory) <= 5 ? "#FFCDD2" : "inherit",
+                    (daysLeft(member.planHistory) <= 5 ||  daysLeft(member.planHistory)==='Expired')  ? "#FFCDD2" : "inherit",
                   color:
                     daysLeft(member.planHistory) <= 5 ? "white" : "inherit",
                 }}
