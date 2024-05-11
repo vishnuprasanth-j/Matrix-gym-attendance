@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import html2pdf from "html2pdf.js";
 import Logo from "/logo_transparent.png";
-import POINTS from "/points.png";
+
 const ReceiptDialog = ({ open, onClose, receiptData }) => {
   if (!receiptData) {
     return null;

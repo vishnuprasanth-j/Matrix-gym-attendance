@@ -1,5 +1,6 @@
 import {
   Alert,
+  Avatar,
   Button,
   Dialog,
   DialogActions,
@@ -21,6 +22,7 @@ import {
 import { db } from "../lib/firebase";
 import POINTS from "/points.png";
 import { addMonths, differenceInDays, formatDistanceToNow } from "date-fns";
+import Logo from "/logo_transparent.png";
 
 const AttendancePage = () => {
   const [regNumber, setRegNumber] = useState("");
@@ -155,7 +157,7 @@ const AttendancePage = () => {
     <div className="attendance-container">
       <section id="contact">
         <h1 className="contact-title">
-          Attendance <span> Registration</span>
+      Attendance <span> Registration</span>
         </h1>
         <div className="contact-container">
           <div className="contact-london">

@@ -22,6 +22,8 @@ const RenewMemberModal = ({
   const handleSubmit = (event) => {
     event.preventDefault();
     handleRenew(selectedPlan.dn, selectedPlan.duration, amount);
+    setSelectedPlan("");
+    setAmount("");
   };
 
   return (

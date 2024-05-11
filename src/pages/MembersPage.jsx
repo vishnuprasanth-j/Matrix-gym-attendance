@@ -87,7 +87,11 @@ const MembersPage = () => {
         querySnapshot.forEach((doc) => {
           membersData.push({ id: doc.id, ...doc.data() });
         });
-        membersData.sort((a, b) => a.regno.localeCompare(b.regno));
+        membersData.sort((a, b) => {
+          const numA = Number(a.regno);
+          const numB = Number(b.regno);
+          return numA - numB;
+        });
         setMembers(membersData);
       } catch (error) {
         console.error("Error fetching members: ", error);
@@ -120,10 +124,10 @@ const MembersPage = () => {
       const membersData = [];
       querySnapshot.forEach((doc) => {
         membersData.push({ id: doc.id, ...doc.data() });
-      });      
+      });
       membersData.sort((a, b) => {
-        const numA = Number(a.regno); 
-        const numB = Number(b.regno); 
+        const numA = Number(a.regno);
+        const numB = Number(b.regno);
         return numA - numB;
       });
       setMembers(membersData);
@@ -131,7 +135,6 @@ const MembersPage = () => {
       console.error("Error fetching members: ", error);
     }
   };
-
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -190,7 +193,7 @@ const MembersPage = () => {
         plan: newPlan,
         planStart: Timestamp.now(),
         planEnd: planEndTS,
-        amount:amount
+        amount: amount,
       };
 
       await updateDoc(memberRef, {
@@ -209,11 +212,11 @@ const MembersPage = () => {
     const currPlanEnd = planHistory[planHistory.length - 1].planEnd.toDate();
     const now = new Date();
     const diffInDays = differenceInDays(currPlanEnd, now);
-  
+
     if (diffInDays <= 0) {
       return "Expired";
     } else {
-      return `${diffInDays}d`;
+      return diffInDays;
     }
   };
 
@@ -288,21 +291,21 @@ const MembersPage = () => {
         ...editedMember,
         dob: dobTimestamp,
       });
-      fetchMembers()
+      fetchMembers();
       console.log("Document successfully updated!");
     } catch (error) {
       console.error("Error updating document: ", error);
     }
   };
-  const CalculateBalance=(paid,currplan)=>{
-     const selectedPlan=plans.find(plan=>plan.dn===currplan);
-     if(!selectedPlan){
-      return ""
-     }
-     const selectedPlanAmount=selectedPlan.amount;
-     const diff= Number(selectedPlanAmount)-Number(paid)
-     return diff===0 ? "Nil" : diff;
-  }
+  const CalculateBalance = (paid, currplan) => {
+    const selectedPlan = plans.find((plan) => plan.dn === currplan);
+    if (!selectedPlan) {
+      return "";
+    }
+    const selectedPlanAmount = selectedPlan.amount;
+    const diff = Number(selectedPlanAmount) - Number(paid);
+    return diff === 0 ? "Nil" : diff;
+  };
 
   return (
     <div className="memberspage-container">
@@ -355,6 +358,10 @@ const MembersPage = () => {
                 key={member.id}
                 sx={{
                   cursor: "pointer",
+                  backgroundColor:
+                    daysLeft(member.planHistory) <= 5 ? "#FFCDD2" : "inherit",
+                  color:
+                    daysLeft(member.planHistory) <= 5 ? "white" : "inherit",
                 }}
                 className="bd"
               >
@@ -367,7 +374,12 @@ const MembersPage = () => {
                 <TableCell>{member.phone}</TableCell>
 
                 <TableCell>{daysLeft(member.planHistory)}</TableCell>
-                <TableCell>{CalculateBalance(member.planHistory[member.planHistory.length-1].amount,member.planHistory[member.planHistory.length-1].plan)}</TableCell>
+                <TableCell>
+                  {CalculateBalance(
+                    member.planHistory[member.planHistory.length - 1].amount,
+                    member.planHistory[member.planHistory.length - 1].plan
+                  )}
+                </TableCell>
                 <TableCell align="center">
                   <Button onClick={() => handleEditOpen(member)}>
                     <FontAwesomeIcon icon={faPen} />

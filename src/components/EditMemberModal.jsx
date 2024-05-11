@@ -22,7 +22,7 @@ import { Timestamp } from "firebase/firestore";
 
 const convertTimestampToString = (timestamp) => {
   if (!timestamp || typeof timestamp.seconds !== "number") {
-    return  timestamp;
+    return timestamp;
   }
   const date = new Date(timestamp.seconds * 1000); // Convert seconds to milliseconds
   return date.toISOString().substring(0, 10); // Format YYYY-MM-DD
@@ -88,10 +88,12 @@ const EditMemberModal = ({
       });
       setHidFormData({
         currentPlan: memberData.currentPlan || "",
-        currPlanStart:  memberData?.currPlanStart || "",
+        currPlanStart: memberData?.currPlanStart || "",
         planHistory: memberData.planHistory || "",
       });
-      setAmount(memberData.planHistory[memberData.planHistory.length-1].amount)
+      setAmount(
+        memberData.planHistory[memberData.planHistory.length - 1].amount
+      );
       setPhotoUrl(memberData.photo || "");
       console.log(hidformData);
     }
@@ -101,8 +103,10 @@ const EditMemberModal = ({
     if (name === "currentPlan") {
       const selectedPlan = plans.find((plan) => plan.dn === value);
       const durationInMonths = selectedPlan ? selectedPlan.duration : 0;
-      const currPlanStartDate = new Date(convertTimestampToString(hidformData.currPlanStart));
-    
+      const currPlanStartDate = new Date(
+        convertTimestampToString(hidformData.currPlanStart)
+      );
+
       const planEndDate = new Date(currPlanStartDate);
       planEndDate.setMonth(planEndDate.getMonth() + durationInMonths);
 
@@ -118,9 +122,11 @@ const EditMemberModal = ({
         currentPlan: value,
         planHistory: updatedPlanHistory,
       });
-      setAmount(selectedPlan.amount)
+      setAmount(selectedPlan.amount);
     } else {
-      const selectedPlan = plans.find((plan) => plan.dn === hidformData.currentPlan);
+      const selectedPlan = plans.find(
+        (plan) => plan.dn === hidformData.currentPlan
+      );
       const durationInMonths = selectedPlan ? selectedPlan.duration : 0;
       const currPlanStartDate = new Date(value);
 
@@ -131,7 +137,7 @@ const EditMemberModal = ({
       if (updatedPlanHistory.length > 0) {
         const lastPlan = updatedPlanHistory[updatedPlanHistory.length - 1];
         lastPlan.amount = amount;
-        lastPlan.planStart=Timestamp.fromDate(currPlanStartDate);
+        lastPlan.planStart = Timestamp.fromDate(currPlanStartDate);
         lastPlan.planEnd = Timestamp.fromDate(planEndDate);
       }
       setHidFormData({
@@ -149,16 +155,15 @@ const EditMemberModal = ({
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
-      if(changePlan){
-        const formDataWplan={
+      if (changePlan) {
+        const formDataWplan = {
           ...formData,
-          ...hidformData
-        }
+          ...hidformData,
+        };
         await handleEdit(formDataWplan, memberData, photoName);
-      }else{
+      } else {
         await handleEdit(formData, memberData, photoName);
       }
-   
     } catch (error) {
       console.error("An error occurred during the update:", error);
     }
@@ -188,6 +193,18 @@ const EditMemberModal = ({
 
   const handleEditPhoto = () => {
     document.getElementById("photoInput").click();
+  };
+  const handleAmountChange = (e) => {
+    setAmount(e.target.value);
+    const updatedPlanHistory = [...hidformData.planHistory];
+    if (updatedPlanHistory.length > 0) {
+      const lastPlan = updatedPlanHistory[updatedPlanHistory.length - 1];
+      lastPlan.amount = e.target.value;
+    }
+    setHidFormData({
+      ...hidformData,
+      planHistory: updatedPlanHistory
+    });
   };
   return (
     <Dialog open={open} onClose={handleClose}>
@@ -424,7 +441,7 @@ const EditMemberModal = ({
                   label="Amount"
                   name="amount"
                   value={amount}
-                  onChange={(e)=>{setAmount(e.target.value)}}
+                  onChange={handleAmountChange}
                   fullWidth
                 />
               </Grid>
