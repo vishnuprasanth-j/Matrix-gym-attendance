@@ -122,7 +122,7 @@ const PlanEditPage = () => {
       <Typography variant="h6" textAlign={"center"}>
         Plans
       </Typography>
-      <Container sx={{ width: "90%", margin: "auto" }}>
+      <Container sx={{ width: "90%", margin: "auto" ,marginBottom:"50px"}}>
         <Button
           onClick={handleOpenAddDialog}
           variant="contained"

@@ -5,7 +5,7 @@
   --color-bg: #000000;
   --color-cyan: #3AE3D9;
   --color-pink: #F151FF;
-  --gradient: linear-gradient(120deg, rgba(58,227,217,1) 20%, rgba(241,81,255,1) 80%);
+  --gradient: linear-gradient(120deg,#e38a3d 20%,#ffbf88 80%);
   --transition: all 0.5s ease;
 }
 
@@ -33,7 +33,7 @@ html, body {
     font-family: "Poppins", sans-serif;
   font-weight: 400;
   font-style: normal;
-  overflow: hidden;
+
 
   }
   h1 {

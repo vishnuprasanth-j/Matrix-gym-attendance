@@ -202,7 +202,7 @@ const AttendancePage = () => {
               <br />
               <br></br>
               <button className="send-btn" onClick={handleAttendanceSubmit}>
-                Enter
+                ENTER
               </button>
               {memberDetails && (
                 <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>

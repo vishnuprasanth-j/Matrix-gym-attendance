@@ -4,7 +4,19 @@ import Chart from "chart.js/auto";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../lib/AuthContext";
 import { SignOutUser, db } from "../lib/firebase";
-import { Button, CircularProgress, Grid, MenuItem, Select } from "@mui/material";
+import {
+  Button,
+  CircularProgress,
+  Grid,
+  MenuItem,
+  Select,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowRightFromBracket,
@@ -35,9 +47,9 @@ const DashboardPage = () => {
   const earningsChartRef = useRef(null);
   const earningsChartInstance = useRef(null);
   const [loading, setLoading] = useState(false);
-  
-  useEffect(()=>{
-    setLoading(true)
+  const [plansCount, setPlansCount] = useState(null);
+  useEffect(() => {
+    setLoading(true);
     const fetchData = async () => {
       let memData = [];
       try {
@@ -49,11 +61,13 @@ const DashboardPage = () => {
           querySnapshot.forEach((doc) => {
             memData.push({ id: doc.id, ...doc.data() });
           });
-          localStorage.setItem("absentees",JSON.stringify(memData))
+          localStorage.setItem("absentees", JSON.stringify(memData));
         }
         const startOfYear = new Date(selectedYear, 0, 1);
         const endOfYear = new Date(selectedYear, 11, 31);
         let earningsByMonth = Array(12).fill(0);
+        let plansObj = {};
+        let plansArr = [];
         memData.forEach((member) => {
           member.planHistory?.forEach((plan) => {
             const start = new Date(plan.planStart.seconds * 1000);
@@ -64,17 +78,26 @@ const DashboardPage = () => {
               const month = start.getMonth();
               earningsByMonth[month] += amount;
             }
+
+            if (!plansArr.includes(plan.plan)) {
+              plansArr.push(plan.plan);
+              plansObj[plan.plan] = 0;
+            } else {
+              plansObj[plan.plan] += 1;
+            }
+            console.log(plansArr, plansObj);
+            setPlansCount(plansObj);
           });
         });
-        setMonthlyEarnings(earningsByMonth);       
+        setMonthlyEarnings(earningsByMonth);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
-      setLoading(false)
+      setLoading(false);
     };
 
     fetchData();
-  },[selectedYear])
+  }, [selectedYear]);
   useEffect(() => {
     const fetchData = async () => {
       let memData = [];
@@ -105,8 +128,6 @@ const DashboardPage = () => {
         });
         setJyData({ maleCount: jyMale, femaleCount: jyFemale });
         setKsData({ maleCount: ksMale, femaleCount: ksFemale });
-
-       
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -221,8 +242,26 @@ const DashboardPage = () => {
           <canvas ref={ksChartRef}></canvas>
         </Grid>
       </Grid>
-      <Grid container spacing={3}>
-        <Grid item xs={12} style={{ height: "300px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",marginTop:"30px" }} >
+      <Grid
+        container
+        spacing={3}
+        sx={{
+          marginTop: "30px",
+        }}
+        xs={12}
+      >
+        <Grid
+          item
+          xs={12}
+          sm={6}
+          style={{
+            height: "300px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           <Select
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
@@ -243,6 +282,65 @@ const DashboardPage = () => {
           ) : (
             <canvas ref={earningsChartRef}></canvas>
           )}
+        </Grid>
+        <Grid xs={12} sm={6}>
+          {" "}
+          <TableContainer
+            sx={{
+              marginTop: "30px",
+              width: "500px",
+              height: "300px",
+            }}
+          >
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Month</TableCell>
+                  <TableCell>Earnings</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {monthlyEarnings.map((earnings, index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      {new Date(selectedYear, index).toLocaleString("default", {
+                        month: "long",
+                      })}
+                    </TableCell>
+                    <TableCell>{earnings}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Grid>
+      </Grid>
+      <Grid>
+        <Grid xs={12} sm={6}>
+          <TableContainer
+            sx={{
+              marginTop: "30px",
+              width: "500px",
+              height: "300px",
+            }}
+          >
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Plan</TableCell>
+                  <TableCell>Count</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {plansCount&&Object.entries(plansCount).map(([plan, count]) => (
+                  <TableRow key={plan}>
+                    <TableCell>{plan}</TableCell>
+                    <TableCell>{count}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </Grid>
       </Grid>
     </div>

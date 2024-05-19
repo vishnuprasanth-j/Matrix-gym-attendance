@@ -53,9 +53,10 @@
 
 .contact-form {
   width: 600px;
-  height: 400px;
+  height: 410px;
   border-radius: 35px;
-  background-image: url('/logo_transparent.png');
+  background-color: #ffbf88;
+  background-image: url('/Logo2.png');
   background-size: cover;
   background-position: center;
   box-shadow: rgba(255, 255, 255, 0.1) 0px 1px 1px 0px inset, rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px; 
@@ -67,7 +68,7 @@
   width: max-content;
   display: inline-block;
   color: #fff;
-  background: var(--gradient);
+  background-color: #070606;
   padding: 10px 50px 10px 50px;
   border-radius: 15px;
   cursor: pointer;
