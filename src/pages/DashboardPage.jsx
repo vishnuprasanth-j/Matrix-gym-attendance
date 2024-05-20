@@ -7,8 +7,10 @@ import { SignOutUser, db } from "../lib/firebase";
 import {
   Button,
   CircularProgress,
+  Container,
   Grid,
   MenuItem,
+  Paper,
   Select,
   Table,
   TableBody,
@@ -16,6 +18,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Typography,
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -242,6 +245,7 @@ const DashboardPage = () => {
           <canvas ref={ksChartRef}></canvas>
         </Grid>
       </Grid>
+      <Typography sx={{backgroundColor:"black",color:"white",textAlign:"center",marginTop:"20px"}}>Earnings</Typography>
       <Grid
         container
         spacing={3}
@@ -283,14 +287,18 @@ const DashboardPage = () => {
             <canvas ref={earningsChartRef}></canvas>
           )}
         </Grid>
-        <Grid xs={12} sm={6}>
+        <Grid xs={12} sm={6}  item sx={{
+          display:"flex",
+          justifyContent:"center",
+        }}>
           {" "}
           <TableContainer
             sx={{
               marginTop: "30px",
-              width: "500px",
+              width: "300px",
               height: "300px",
             }}
+            component={Paper}
           >
             <Table>
               <TableHead>
@@ -314,15 +322,21 @@ const DashboardPage = () => {
             </Table>
           </TableContainer>
         </Grid>
-      </Grid>
-      <Grid>
+      </Grid>  
+      <Typography sx={{backgroundColor:"black",color:"white",textAlign:"center",marginTop:"20px"}}>Plans</Typography>
+      <Grid xs={12} sx={{
+        display:"flex",
+        justifyContent:"center"
+      }}>
         <Grid xs={12} sm={6}>
           <TableContainer
             sx={{
               marginTop: "30px",
-              width: "500px",
+              width: "300px",
               height: "300px",
+              marginBottom: "30px"
             }}
+            component={Paper}
           >
             <Table>
               <TableHead>
@@ -332,12 +346,13 @@ const DashboardPage = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {plansCount&&Object.entries(plansCount).map(([plan, count]) => (
-                  <TableRow key={plan}>
-                    <TableCell>{plan}</TableCell>
-                    <TableCell>{count}</TableCell>
-                  </TableRow>
-                ))}
+                {plansCount &&
+                  Object.entries(plansCount).map(([plan, count]) => (
+                    <TableRow key={plan}>
+                      <TableCell>{plan}</TableCell>
+                      <TableCell>{count}</TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </TableContainer>
