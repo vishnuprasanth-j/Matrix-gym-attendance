@@ -245,7 +245,16 @@ const DashboardPage = () => {
           <canvas ref={ksChartRef}></canvas>
         </Grid>
       </Grid>
-      <Typography sx={{backgroundColor:"black",color:"white",textAlign:"center",marginTop:"20px"}}>Earnings</Typography>
+      <Typography
+        sx={{
+          backgroundColor: "black",
+          color: "white",
+          textAlign: "center",
+          marginTop: "20px",
+        }}
+      >
+        Earnings
+      </Typography>
       <Grid
         container
         spacing={3}
@@ -287,24 +296,31 @@ const DashboardPage = () => {
             <canvas ref={earningsChartRef}></canvas>
           )}
         </Grid>
-        <Grid xs={12} sm={6}  item sx={{
-          display:"flex",
-          justifyContent:"center",
-        }}>
+        <Grid
+          xs={12}
+          sm={6}
+          item
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
           {" "}
           <TableContainer
             sx={{
               marginTop: "30px",
               width: "300px",
               height: "300px",
+              overflow: "auto",
+              scrollbarWidth: "thin"
             }}
             component={Paper}
           >
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Month</TableCell>
-                  <TableCell>Earnings</TableCell>
+                  <TableCell sx={{ color: "#0000ff" }}>Month</TableCell>
+                  <TableCell sx={{ color: "#0000ff" }}>Earnings</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -322,27 +338,41 @@ const DashboardPage = () => {
             </Table>
           </TableContainer>
         </Grid>
-      </Grid>  
-      <Typography sx={{backgroundColor:"black",color:"white",textAlign:"center",marginTop:"20px"}}>Plans</Typography>
-      <Grid xs={12} sx={{
-        display:"flex",
-        justifyContent:"center"
-      }}>
+      </Grid>
+      <Typography
+        sx={{
+          backgroundColor: "black",
+          color: "white",
+          textAlign: "center",
+          marginTop: "20px",
+        }}
+      >
+        Plans
+      </Typography>
+      <Grid
+        xs={12}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
         <Grid xs={12} sm={6}>
           <TableContainer
             sx={{
               marginTop: "30px",
               width: "300px",
               height: "300px",
-              marginBottom: "30px"
+              marginBottom: "30px",
+              overflow: "auto",
+              scrollbarWidth: "thin",
             }}
             component={Paper}
           >
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Plan</TableCell>
-                  <TableCell>Count</TableCell>
+                  <TableCell  sx={{ color: "#0000ff" }}>Plan</TableCell>
+                  <TableCell  sx={{ color: "#0000ff" }}>Count</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
