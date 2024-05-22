@@ -23,6 +23,7 @@ import { db } from "../lib/firebase";
 import POINTS from "/points.png";
 import { addMonths, differenceInDays, formatDistanceToNow } from "date-fns";
 import Logo from "/logo_transparent.png";
+import Logo2 from "/Logo2.png";
 
 const AttendancePage = () => {
   const [regNumber, setRegNumber] = useState("");
@@ -157,6 +158,7 @@ const AttendancePage = () => {
     <div className="attendance-container">
       <section id="contact">
         <h1 className="contact-title">
+        <img src={Logo2} className="ll-ct"></img>
       Attendance <span> Registration</span>
         </h1>
         <div className="contact-container">
