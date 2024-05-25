@@ -40,7 +40,7 @@ const AbsenteesPage = () => {
     const fetchAbsentees = async () => {
       try {
         let absenteesData = [];
-  
+
         const localMembers = localStorage.getItem("absentees");
         if (localMembers) {
           const membersData = JSON.parse(localMembers);
@@ -51,13 +51,15 @@ const AbsenteesPage = () => {
               member.batch === selectedBatch &&
               (attendanceOption === "Present"
                 ? member.attendance && member.attendance.includes(formattedDate)
-                : !member.attendance || !member.attendance.includes(formattedDate))
+                : !member.attendance ||
+                  !member.attendance.includes(formattedDate))
             ) {
               absenteesData.push({
                 id: member.id,
                 name: member.name,
                 phone: member.phone,
                 regno: member.regno,
+                attendance: member.attendance,
               });
             }
           });
@@ -68,36 +70,37 @@ const AbsenteesPage = () => {
             q = query(q, where("branch", "==", branch));
           }
           const querySnapshot = await getDocs(q);
-  
+
           querySnapshot.forEach((doc) => {
             const member = doc.data();
             const formattedDate = formatDate(selectedDate);
-  
+
             if (
               member.batch === selectedBatch &&
               (attendanceOption === "Present"
                 ? member.attendance && member.attendance.includes(formattedDate)
-                : !member.attendance || !member.attendance.includes(formattedDate))
+                : !member.attendance ||
+                  !member.attendance.includes(formattedDate))
             ) {
               absenteesData.push({
                 id: doc.id,
                 name: member.name,
                 phone: member.phone,
                 regno: member.regno,
+                attendance: member.attendance,
               });
             }
           });
         }
-  
+
         setAbsentees(absenteesData);
       } catch (error) {
         console.error("Error fetching absentees: ", error);
       }
     };
-  
+
     fetchAbsentees();
   }, [branch, selectedBatch, selectedDate, attendanceOption]);
-  
 
   const formatDate = (date) => {
     const day = date.getDate();
@@ -106,7 +109,6 @@ const AbsenteesPage = () => {
     return `${month}/${day}/${year}`;
   };
 
-  
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -136,6 +138,18 @@ const AbsenteesPage = () => {
     setIsSidebarOpen(false);
   };
 
+  const calculateDaysSinceLastPresent = (attendance) => {
+    if (!attendance || attendance.length === 0) return "N/A";
+
+    const lastAttendanceDate = new Date(attendance[attendance.length - 1]);
+    const today = new Date();
+
+    const differenceInTime = today.getTime() - lastAttendanceDate.getTime();
+    const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
+
+    return differenceInDays;
+  };
+
   return (
     <div className="enquirypage-container">
       <div className="enquirypage-btn-container">
@@ -153,47 +167,46 @@ const AbsenteesPage = () => {
         <Tab label="Morning" value="Morning" />
         <Tab label="Evening" value="Evening" />
       </Tabs>
-      
-      <div className="attendance-options">
-      <div className="date-picker-container">
-      <DatePicker
-          selected={selectedDate}
-          onChange={handleDateChange}
-          dateFormat="dd/MM/yyyy"
-          className="date-picker"
-        />
-      </div>
 
-      <div className="filter-container">
-      <Typography variant="body1" sx={{marginRight:"10px"}}>
-        Filter :-
-      </Typography>
-        <RadioGroup
-          row
-          aria-label="attendance-options"
-          name="attendance-options"
-          value={attendanceOption}
-          onChange={handleAttendanceOptionChange}
-        >
-          <FormControlLabel
-            value="Present"
-            control={<Radio />}
-            label="Present"
+      <div className="attendance-options">
+        <div className="date-picker-container">
+          <DatePicker
+            selected={selectedDate}
+            onChange={handleDateChange}
+            dateFormat="dd/MM/yyyy"
+            className="date-picker"
           />
-          <FormControlLabel
-            value="Absent"
-            control={<Radio />}
-            label="Absent"
-          />
-        </RadioGroup>
-      </div>
-    
+        </div>
+
+        <div className="filter-container">
+          <Typography variant="body1" sx={{ marginRight: "10px" }}>
+            Filter :-
+          </Typography>
+          <RadioGroup
+            row
+            aria-label="attendance-options"
+            name="attendance-options"
+            value={attendanceOption}
+            onChange={handleAttendanceOptionChange}
+          >
+            <FormControlLabel
+              value="Present"
+              control={<Radio />}
+              label="Present"
+            />
+            <FormControlLabel
+              value="Absent"
+              control={<Radio />}
+              label="Absent"
+            />
+          </RadioGroup>
+        </div>
       </div>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
-            <TableCell>
+              <TableCell>
                 <Typography variant="subtitle1" fontWeight="bold">
                   RegNo.
                 </Typography>
@@ -208,6 +221,13 @@ const AbsenteesPage = () => {
                   Phone
                 </Typography>
               </TableCell>
+              {attendanceOption === "Absent" && (
+                <TableCell>
+                  <Typography variant="subtitle1" fontWeight="bold">
+                    Last Present
+                  </Typography>
+                </TableCell>
+              )}
               <TableCell align="center">
                 <Typography variant="subtitle1" fontWeight="bold">
                   Reminder
@@ -223,6 +243,12 @@ const AbsenteesPage = () => {
                   <TableCell>{absentee.regno}</TableCell>
                   <TableCell>{absentee.name}</TableCell>
                   <TableCell>{absentee.phone}</TableCell>
+                  {attendanceOption === "Absent" && (
+                    <TableCell>
+                      {calculateDaysSinceLastPresent(absentee.attendance)} days
+                      ago
+                    </TableCell>
+                  )}
                   <TableCell align="center">
                     <Link
                       to={`https://wa.me/91${absentee.phone}?text=Hi%20this%20is%20Matrix%20Gym.%20We%20missed%20you%20at%20the%20gym!%20Remember,%20consistency%20is%20key%20–%20looking%20forward%20to%20seeing%20you%20back%20soon!`}

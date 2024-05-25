@@ -1,6 +1,6 @@
 import "../styles/MembersPage.css";
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import {
   collection,
   getDocs,
@@ -24,6 +24,10 @@ import {
   TextField,
   Paper,
   TablePagination,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { differenceInDays, addMonths, formatDistanceToNow } from "date-fns";
 import AddMemberModal from "../components/AddMemberModal";
@@ -32,9 +36,15 @@ import UserInfoModal from "../components/UserInfoModal";
 import Sidebar from "../components/SideBar";
 import ConfirmModal from "../components/ConfirmModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBars,
+  faBell,
+  faPen,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 import EditMemberModal from "../components/EditMemberModal";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
 const MembersPage = () => {
   const { branch } = useParams();
   console.log(branch);
@@ -52,6 +62,7 @@ const MembersPage = () => {
   const [editMemberData, setEditMemberData] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [plans, setPlans] = useState([]);
+  const [selectedPlan, setSelectedPlan] = useState("All");
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -108,12 +119,21 @@ const MembersPage = () => {
     }
   }, [members]);
 
+  // useEffect(() => {
+  //   const filteredMembers = members.filter((member) =>
+  //     member.regno.includes(searchQuery.toLowerCase())
+  //   );
+  //   setSortedMembers(filteredMembers);
+  // }, [searchQuery, members]);
+
   useEffect(() => {
-    const filteredMembers = members.filter((member) =>
-      member.regno.includes(searchQuery.toLowerCase())
+    const filteredMembers = members.filter(
+      (member) =>
+        member.regno.includes(searchQuery.toLowerCase()) &&
+        (selectedPlan === "All" || member.currentPlan === selectedPlan)
     );
     setSortedMembers(filteredMembers);
-  }, [searchQuery, members]);
+  }, [searchQuery, selectedPlan, members]);
 
   const fetchMembers = async () => {
     try {
@@ -178,7 +198,12 @@ const MembersPage = () => {
     setIsRenewMemberModalOpen(false);
   };
 
-  const handleRenewMember = async (newPlan, duration, amount,setReceiptData) => {
+  const handleRenewMember = async (
+    newPlan,
+    duration,
+    amount,
+    setReceiptData
+  ) => {
     try {
       if (!selectedMember) return;
 
@@ -204,9 +229,9 @@ const MembersPage = () => {
       });
       const updatedDocSnapshot = await getDoc(memberRef);
       const updatedDocData = updatedDocSnapshot.data();
-      setReceiptData(updatedDocData)
+      setReceiptData(updatedDocData);
       fetchMembers();
-      } catch (error) {
+    } catch (error) {
       console.error("Error renewing member:", error);
     }
   };
@@ -310,6 +335,10 @@ const MembersPage = () => {
     return diff === 0 ? "Nil" : diff;
   };
 
+  const handlePlanChange = (event) => {
+    setSelectedPlan(event.target.value);
+  };
+
   return (
     <div className="memberspage-container">
       <div className="memberspage-btn-container">
@@ -325,15 +354,37 @@ const MembersPage = () => {
           Add New Member
         </Button>
       </div>
+      <Grid2 container spacing={2} sx={{ marginBottom: "10px" }}>
+        <Grid2 xs={12} sm={6}>
+          <TextField
+            label="Search by Register Number"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            variant="outlined"
+            fullWidth
+            margin="normal"
+          />
+        </Grid2>
+        <Grid2 xs={12} sm={6}>
+          <FormControl fullWidth margin="normal" variant="outlined">
+            <InputLabel id="plan-select-label">Select Plan</InputLabel>
+            <Select
+              labelId="plan-select-label"
+              value={selectedPlan}
+              onChange={handlePlanChange}
+              label="Select Plan"
+            >
+              <MenuItem value="All">All Plans</MenuItem>
+              {plans.map((plan) => (
+                <MenuItem key={plan.id} value={plan.dn}>
+                  {plan.dn}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid2>
+      </Grid2>
 
-      <TextField
-        label="Search by Register Number"
-        value={searchQuery}
-        onChange={handleSearchChange}
-        variant="outlined"
-        fullWidth
-        margin="normal"
-      />
       <TableContainer component={Paper}>
         <Table
           sx={{
@@ -344,15 +395,21 @@ const MembersPage = () => {
           }}
         >
           <TableHead>
-            <TableRow>
-              <TableCell>Reg No.</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Age</TableCell>
-              <TableCell>Batch</TableCell>
-              <TableCell>Phone</TableCell>
-              <TableCell>Days Left</TableCell>
-              <TableCell>Balance</TableCell>
-              <TableCell align="center">Actions</TableCell>
+            <TableRow
+              sx={{
+                backgroundColor: "#1976d2",
+              }}
+            >
+              <TableCell sx={{ color: "white" }}>Reg No.</TableCell>
+              <TableCell sx={{ color: "white" }}>Name</TableCell>
+              <TableCell sx={{ color: "white" }}>Age</TableCell>
+              <TableCell sx={{ color: "white" }}>Batch</TableCell>
+              <TableCell sx={{ color: "white" }}>Phone</TableCell>
+              <TableCell sx={{ color: "white" }}>Days Left</TableCell>
+              <TableCell sx={{ color: "white" }}>Balance</TableCell>
+              <TableCell align="center" sx={{ color: "white" }}>
+                Actions
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -362,7 +419,10 @@ const MembersPage = () => {
                 sx={{
                   cursor: "pointer",
                   backgroundColor:
-                    (daysLeft(member.planHistory) <= 5 ||  daysLeft(member.planHistory)==='Expired')  ? "#FFCDD2" : "inherit",
+                    daysLeft(member.planHistory) <= 5 ||
+                    daysLeft(member.planHistory) === "Expired"
+                      ? "#FFCDD2"
+                      : "inherit",
                   color:
                     daysLeft(member.planHistory) <= 5 ? "white" : "inherit",
                 }}
@@ -370,7 +430,44 @@ const MembersPage = () => {
               >
                 <TableCell>{member.regno}</TableCell>
                 <TableCell onClick={() => handleRowClick(member)}>
-                  {member.name}
+                  {member.name}{" "}
+                  {daysLeft(member.planHistory) <= 5 ? (
+                    <Link
+                      to={`https://wa.me/91${
+                        member.phone
+                      }?text=${encodeURIComponent(
+                        `Hi there! This is a friendly reminder from Matrix Gym that your membership plan is about to expire in ${daysLeft(
+                          member.planHistory
+                        )} days. Please renew soon to continue enjoying our services. Thank you!`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <FontAwesomeIcon
+                        icon={faBell}
+                        style={{ color: "red" }}
+                        shake
+                      />
+                    </Link>
+                  ) : daysLeft(member.planHistory) === "Expired" ? (
+                    <Link
+                      to={`https://wa.me/91${
+                        member.phone
+                      }?text=${encodeURIComponent(
+                        `Hi there! This is a friendly reminder from Matrix Gym that your membership plan is expired. Please renew soon to continue enjoying our services. Thank you!`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <FontAwesomeIcon
+                        icon={faBell}
+                        style={{ color: "red" }}
+                        shake
+                      />
+                    </Link>
+                  ) : (
+                    ""
+                  )}
                 </TableCell>
                 <TableCell>{member.age}</TableCell>
                 <TableCell>{member.batch}</TableCell>
@@ -384,25 +481,40 @@ const MembersPage = () => {
                   )}
                 </TableCell>
                 <TableCell align="center">
-                  <Button onClick={() => handleEditOpen(member)}>
-                    <FontAwesomeIcon icon={faPen} />
-                  </Button>
-                  <Button
-                    onClick={() => handleDeleteButtonClick(member)}
-                    color="error"
+                  <Grid2
+                    container
+                    spacing={1}
+                    alignItems="center"
+                    justifyContent="center"
                   >
-                    <FontAwesomeIcon icon={faTrash} />
-                  </Button>
-                  {isPlanExpired(member.planHistory) ? (
-                    <Button
-                      style={{ color: "red" }}
-                      onClick={() => handleRenewButtonClick(member)}
-                    >
-                      Renew
-                    </Button>
-                  ) : (
-                    <Button style={{ color: "green" }}>Active</Button>
-                  )}
+                    <Grid2 item>
+                      <Button onClick={() => handleEditOpen(member)}>
+                        <FontAwesomeIcon icon={faPen} />
+                      </Button>
+                    </Grid2>
+                    <Grid2 item>
+                      <Button
+                        onClick={() => handleDeleteButtonClick(member)}
+                        color="error"
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                      </Button>
+                    </Grid2>
+                    {isPlanExpired(member.planHistory) ? (
+                      <Grid2 item>
+                        <Button
+                          style={{ color: "red" }}
+                          onClick={() => handleRenewButtonClick(member)}
+                        >
+                          Renew
+                        </Button>
+                      </Grid2>
+                    ) : (
+                      <Grid2 item>
+                        <Button style={{ color: "green" }}>Active</Button>
+                      </Grid2>
+                    )}
+                  </Grid2>
                 </TableCell>
               </TableRow>
             ))}
