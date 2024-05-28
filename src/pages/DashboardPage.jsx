@@ -3,11 +3,10 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import Chart from "chart.js/auto";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../lib/AuthContext";
-import { SignOutUser, db } from "../lib/firebase";
+import { db } from "../lib/firebase";
 import {
   Button,
   CircularProgress,
-  Container,
   Grid,
   MenuItem,
   Paper,
@@ -16,17 +15,16 @@ import {
   TableBody,
   TableCell,
   TableContainer,
+  TableFooter,
   TableHead,
   TableRow,
   Typography,
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faArrowRightFromBracket,
-  faBars,
-} from "@fortawesome/free-solid-svg-icons";
+import { faBars } from "@fortawesome/free-solid-svg-icons";
 import SidebarDashboard from "../components/SidebarDashboard";
 import "../styles/DashboardPage.css";
+import * as XLSX from "xlsx";
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -216,6 +214,20 @@ const DashboardPage = () => {
     setIsSidebarOpen(false);
   };
 
+  const handleDownload = () => {
+    const ws = XLSX.utils.json_to_sheet(
+      monthlyEarnings.map((earnings, index) => ({
+        Month: new Date(selectedYear, index).toLocaleString("default", {
+          month: "long",
+        }),
+        Earnings: earnings,
+      }))
+    );
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Monthly Earnings");
+    XLSX.writeFile(wb, `${selectedYear}_monthly_earnings.xlsx`);
+  };
+
   return (
     <div className="dbpage-container">
       <Button onClick={handleSidebarOpen}>
@@ -312,7 +324,7 @@ const DashboardPage = () => {
               width: "300px",
               height: "300px",
               overflow: "auto",
-              scrollbarWidth: "thin"
+              scrollbarWidth: "thin",
             }}
             component={Paper}
           >
@@ -335,6 +347,20 @@ const DashboardPage = () => {
                   </TableRow>
                 ))}
               </TableBody>
+              <TableFooter>
+                <TableRow>
+                  <TableCell colSpan={2}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      color="primary"
+                      onClick={handleDownload}
+                    >
+                      Download Monthly Sales
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              </TableFooter>
             </Table>
           </TableContainer>
         </Grid>
@@ -371,8 +397,8 @@ const DashboardPage = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell  sx={{ color: "#0000ff" }}>Plan</TableCell>
-                  <TableCell  sx={{ color: "#0000ff" }}>Count</TableCell>
+                  <TableCell sx={{ color: "#0000ff" }}>Plan</TableCell>
+                  <TableCell sx={{ color: "#0000ff" }}>Count</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>

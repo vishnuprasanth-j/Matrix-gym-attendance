@@ -1,4 +1,4 @@
-#contact {
+.attendance-container {
   height: 110vh;
   overflow: hidden;
   background-color: #070606;
@@ -9,7 +9,7 @@
   color: #fff;
   text-transform: uppercase;
   text-align: center;
-  margin-top: 100px;
+  font-family: "Orbitron", sans-serif;
 }
 
 .contact-container {
@@ -49,13 +49,17 @@
   margin-right: 5px;
 }
 
-.ll-ct{
-  width: 60px;
+.l-ct {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+}
+
+.ll-ct {
+  width: 100px;
   vertical-align: text-top;
-  border-radius: 50%;
   margin: 10px;
-  height: 60px;
-  background-color: white;
+  height: 100px;
 }
 
 .contact-form {
@@ -63,10 +67,12 @@
   height: 410px;
   border-radius: 35px;
   background-color: #ffbf88;
-  background-image: url('/atbck.jpg');
+  background-image: url("/atbck.jpg");
   background-size: cover;
   background-position: center;
-  box-shadow: rgba(255, 255, 255, 0.1) 0px 1px 1px 0px inset, rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px; 
+  box-shadow: rgba(255, 255, 255, 0.1) 0px 1px 1px 0px inset,
+    rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
+    rgba(0, 0, 0, 0.3) 0px 30px 60px -30px;
 }
 
 .send-btn {
@@ -113,8 +119,7 @@ input {
 .email {
   margin-left: 55px;
 }
-.contact-title span
-{
+.contact-title span {
   background-image: var(--gradient);
   background-size: 100%;
   background-clip: text;
@@ -129,8 +134,7 @@ input {
   justify-content: center;
   padding: 30px;
 }
-#header-span span
-{
+#header-span span {
   background-image: var(--gradient);
   background-size: 100%;
   background-clip: text;
@@ -138,7 +142,6 @@ input {
   -moz-background-clip: text;
   -webkit-text-fill-color: transparent;
   -moz-text-fill-color: transparent;
-
 }
 
 @media screen and (max-width: 1024px) {
@@ -158,8 +161,7 @@ input {
   }
 }
 @media screen and (min-width: 769px) and (max-width: 1024px) {
-  #contact
-  {
+  #contact {
     height: fit-content;
     overflow: scroll;
   }
@@ -208,7 +210,7 @@ input {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .email {
     margin-left: 0px;
   }
@@ -223,6 +225,6 @@ input {
   }
 }
 
-.details{
+.details {
   color: white;
 }

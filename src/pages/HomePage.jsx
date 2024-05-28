@@ -7,7 +7,7 @@ const HomePage = () => {
 
   return (
     <>
-    <h1>Matrix <span id="header-span">Fitness </span>Center</h1>
+    <h1 className="mt-title">Matrix <span id="header-span">Fitness </span>Center</h1>
     <div className="background-image"></div>
     <div className="container-home">
         <div className="button-container">

@@ -23,7 +23,7 @@ import { db } from "../lib/firebase";
 import POINTS from "/points.png";
 import { addMonths, differenceInDays, formatDistanceToNow } from "date-fns";
 import Logo from "/logo_transparent.png";
-import Logo2 from "/Logo2.png";
+import Logo2 from "/matrix logo.jpg";
 
 const AttendancePage = () => {
   const [regNumber, setRegNumber] = useState("");
@@ -82,7 +82,7 @@ const AttendancePage = () => {
         setErrorMessage("Member not found");
         setTimeout(() => {
           setErrorMessage("");
-        }, 4000);
+        }, 6000);
          setRegNumber("");
         setTimeout(() => {
           regInputRef.current.focus();
@@ -108,7 +108,7 @@ const AttendancePage = () => {
       setTimeout(() => {
         setSuccessMessage("");
         setErrorMessage("");
-      }, 4000);
+      }, 6000);
     } catch (error) {
       console.error("Error marking attendance:", error);
       setErrorMessage("Error marking attendance");
@@ -116,7 +116,7 @@ const AttendancePage = () => {
       setTimeout(() => {
         setSuccessMessage("");
         setErrorMessage("");
-      }, 4000);
+      }, 6000);
     }
   };
   const handleMarkAttendance = async () => {
@@ -142,7 +142,7 @@ const AttendancePage = () => {
       setTimeout(() => {
         setSuccessMessage("");
         setErrorMessage("");
-      }, 4000);
+      }, 6000);
     } catch (error) {
       console.error("Error marking attendance:", error);
       setErrorMessage("Error marking attendance");
@@ -150,15 +150,18 @@ const AttendancePage = () => {
       setTimeout(() => {
         setSuccessMessage("");
         setErrorMessage("");
-      }, 4000);
+      }, 6000);
     }
   };
 
   return (
     <div className="attendance-container">
+    <div className="l-ct">
+    <img src={Logo2} className="ll-ct"></img>
+    </div>
+    
       <section id="contact">
-        <h1 className="contact-title">
-        <img src={Logo2} className="ll-ct"></img>
+        <h1 className="contact-title">        
       Attendance <span> Registration</span>
         </h1>
         <div className="contact-container">
