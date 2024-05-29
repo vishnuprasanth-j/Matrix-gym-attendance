@@ -222,11 +222,18 @@ const AbsenteesPage = () => {
                 </Typography>
               </TableCell>
               {attendanceOption === "Absent" && (
-                <TableCell>
-                  <Typography variant="subtitle1" fontWeight="bold">
-                    Last Present
-                  </Typography>
-                </TableCell>
+                <>
+                  <TableCell>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                    Days Absent
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                    Last Attendance
+                    </Typography>
+                  </TableCell>
+                </>
               )}
               <TableCell align="center">
                 <Typography variant="subtitle1" fontWeight="bold">
@@ -244,11 +251,17 @@ const AbsenteesPage = () => {
                   <TableCell>{absentee.name}</TableCell>
                   <TableCell>{absentee.phone}</TableCell>
                   {attendanceOption === "Absent" && (
-                    <TableCell>
-                      {calculateDaysSinceLastPresent(absentee.attendance)} days
-                      ago
-                    </TableCell>
+                    <>
+                      <TableCell>
+                        {calculateDaysSinceLastPresent(absentee.attendance)}{" "}
+                        days 
+                      </TableCell>
+                      <TableCell>
+                        {absentee.attendance[absentee.attendance.length - 1]}
+                      </TableCell>
+                    </>
                   )}
+
                   <TableCell align="center">
                     <Link
                       to={`https://wa.me/91${absentee.phone}?text=Hi%20this%20is%20Matrix%20Gym.%20We%20missed%20you%20at%20the%20gym!%20Remember,%20consistency%20is%20key%20–%20looking%20forward%20to%20seeing%20you%20back%20soon!`}
