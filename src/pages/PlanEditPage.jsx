@@ -30,7 +30,7 @@ const PlanEditPage = () => {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [newPlan, setNewPlan] = useState({
-    name: "",
+    dn: "",
     duration: "",
     amount: "",
   });
@@ -99,7 +99,7 @@ const PlanEditPage = () => {
   const handleAddPlan = async () => {
     try {
       await addDoc(collection(db, "plans"), {
-        name: newPlan.name,
+        dn: newPlan.dn,
         duration: Number(newPlan.duration),
         amount: newPlan.amount,
       });
@@ -186,8 +186,8 @@ const PlanEditPage = () => {
             type="text"
             fullWidth
             variant="outlined"
-            value={newPlan.name}
-            onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
+            value={newPlan.dn}
+            onChange={(e) => setNewPlan({ ...newPlan, dn: e.target.value })}
           />
           <TextField
             margin="dense"
