@@ -164,7 +164,7 @@ const AttendancePage = () => {
         <h1 className="contact-title">        
       Attendance <span> Registration</span>
         </h1>
-        <div className="contact-container">
+              <div className="contact-container">
           <div className="contact-london">
             <h2>
               Gym <span id="header-span"> Rules</span>
@@ -209,6 +209,32 @@ const AttendancePage = () => {
               <button className="send-btn" onClick={handleAttendanceSubmit}>
                 ENTER
               </button>
+              {successMessage && (
+            <Alert
+              severity="success"
+              sx={{
+                position: "realtive",
+                width: "100%",
+                marginTop: "30px",
+                borderRadius: "0px"
+              }}
+            >
+              {successMessage}
+            </Alert>
+          )}
+          {errorMessage && (
+            <Alert
+              severity="error"
+              sx={{
+                position: "realtive",
+                width: "100%",
+                marginTop: "30px",
+                borderRadius: "0px"
+              }}
+            >
+              {errorMessage}
+            </Alert>
+          )}
               {memberDetails && (
                 <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
                   <DialogTitle>Member Details</DialogTitle>
@@ -239,32 +265,7 @@ const AttendancePage = () => {
               )}
             </div>
           </div>
-          {successMessage && (
-            <Alert
-              severity="success"
-              sx={{
-                position: "absolute",
-                bottom: 0,
-                width: "500px",
-                marginBottom: "10px",
-              }}
-            >
-              {successMessage}
-            </Alert>
-          )}
-          {errorMessage && (
-            <Alert
-              severity="error"
-              sx={{
-                position: "absolute",
-                bottom: 0,
-                width: "500px",
-                marginBottom: "10px",
-              }}
-            >
-              {errorMessage}
-            </Alert>
-          )}
+        
         </div>
       </section>
     </div>

@@ -1,7 +1,7 @@
 .attendance-container {
-  height: 110vh;
-  overflow: hidden;
   background-color: #070606;
+  height: 100vh;
+  overflow-y: scroll;
 }
 
 .contact-title {
@@ -56,10 +56,10 @@
 }
 
 .ll-ct {
-  width: 100px;
+  width: 200px;
   vertical-align: text-top;
   margin: 10px;
-  height: 100px;
+  height: 150px;
 }
 
 .contact-form {
@@ -152,7 +152,7 @@ input {
 
   .contact-container {
     margin-top: 30px;
-    flex-direction: column;
+    flex-direction: column-reverse;
     justify-content: space-around;
   }
 
@@ -194,7 +194,7 @@ input {
 
   .contact-form-bg {
     width: 360px;
-    height: 580px;
+    height: 364px;
   }
 
   .contact-form {
