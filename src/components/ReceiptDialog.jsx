@@ -10,7 +10,6 @@ import {
   TableCell,
   TableRow,
   TableContainer,
-  Avatar,
 } from "@mui/material";
 import html2pdf from "html2pdf.js";
 import Logo2 from "/Logo2.png";

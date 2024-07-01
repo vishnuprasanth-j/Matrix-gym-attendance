@@ -147,7 +147,7 @@ const AbsenteesPage = () => {
     const differenceInTime = today.getTime() - lastAttendanceDate.getTime();
     const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
 
-    return differenceInDays;
+    return differenceInDays-1;
   };
 
   return (
