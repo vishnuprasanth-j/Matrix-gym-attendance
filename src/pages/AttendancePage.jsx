@@ -50,17 +50,17 @@ const AttendancePage = () => {
     setRegNumber(event.target.value);
   };
 
-  const calculateDaysLeft=(plEnd)=>{
-    const currPlanEnd =plEnd.toDate();
+  const calculateDaysLeft = (plEnd) => {
+    const currPlanEnd = plEnd.toDate();
     const now = new Date();
     const diffInDays = differenceInDays(currPlanEnd, now);
     console.log(diffInDays)
     if (diffInDays <= 0) {
       return "Expired";
-    } else  {
+    } else {
       return `${diffInDays}d`;
-    } 
-  } 
+    }
+  }
   // const calculateDaysLeft = (endDate, startDate) => {
   //   const end = endDate.toDate();
   //   const start = startDate.toDate();
@@ -83,42 +83,74 @@ const AttendancePage = () => {
         setTimeout(() => {
           setErrorMessage("");
         }, 6000);
-         setRegNumber("");
+        setRegNumber("");
         setTimeout(() => {
           regInputRef.current.focus();
-      }, 100);
+        }, 100);
         return;
       }
-      const memberDoc = membersQuerySnapshot.docs[0];
 
-      const planHistory = memberDoc.data().planHistory;
-      const currPlanStart = planHistory[planHistory.length - 1].planStart;
-      const currPlanEnd = planHistory[planHistory.length - 1].planEnd;
-      // await updateDoc(memberDoc.ref, { attendance: arrayUnion(today) });
-      // setSuccessMessage("Attendance added successfully");
-      setMemberDoc(memberDoc);
-      setMemberDetails({
-        name: memberDoc.data().name,
-        planExpiryDate: currPlanEnd.toDate().toLocaleDateString("en-GB"),
-        daysLeft: calculateDaysLeft(currPlanEnd),
-        batch: memberDoc.data().batch,
-      });
-      setOpenDialog(true);
+      // Check if there are multiple documents
+      const memberDocs = membersQuerySnapshot.docs;
+      console.log(memberDocs)
+      if (memberDocs.length > 1) {
+        const branches = memberDocs.map(doc => doc.data().branch);
 
-      setTimeout(() => {
-        setSuccessMessage("");
-        setErrorMessage("");
-      }, 6000);
+        // Prompt the user to select a branch
+        const selectedBranch = await new Promise((resolve) => {
+          setMemberDetails({ branches, resolve });
+          setOpenDialog(true);
+        });
+
+        // Filter based on the selected branch
+        const selectedDoc = memberDocs.find(doc => doc.data().branch === selectedBranch);
+
+        if (!selectedDoc) {
+          setErrorMessage("Selected branch not found");
+          setTimeout(() => {
+            setErrorMessage("");
+          }, 6000);
+          return;
+        }
+
+        setMemberDoc(selectedDoc);
+        const planHistory = selectedDoc.data().planHistory;
+        const currPlanStart = planHistory[planHistory.length - 1].planStart;
+        const currPlanEnd = planHistory[planHistory.length - 1].planEnd;
+
+        setMemberDetails({
+          name: selectedDoc.data().name,
+          planExpiryDate: currPlanEnd.toDate().toLocaleDateString("en-GB"),
+          daysLeft: calculateDaysLeft(currPlanEnd),
+          batch: selectedDoc.data().batch,
+        });
+        setOpenDialog(true);
+      } else {
+        // If only one document, proceed as before
+        const memberDoc = memberDocs[0];
+        const planHistory = memberDoc.data().planHistory;
+        const currPlanStart = planHistory[planHistory.length - 1].planStart;
+        const currPlanEnd = planHistory[planHistory.length - 1].planEnd;
+
+        setMemberDoc(memberDoc);
+        setMemberDetails({
+          name: memberDoc.data().name,
+          planExpiryDate: currPlanEnd.toDate().toLocaleDateString("en-GB"),
+          daysLeft: calculateDaysLeft(currPlanEnd),
+          batch: memberDoc.data().batch,
+        });
+        setOpenDialog(true);
+      }
     } catch (error) {
       console.error("Error marking attendance:", error);
       setErrorMessage("Error marking attendance");
-
       setTimeout(() => {
         setSuccessMessage("");
         setErrorMessage("");
       }, 6000);
     }
   };
+
   const handleMarkAttendance = async () => {
     try {
       const today = new Date().toLocaleDateString();
@@ -129,7 +161,7 @@ const AttendancePage = () => {
         setRegNumber("");
         setTimeout(() => {
           regInputRef.current.focus();
-      }, 100);
+        }, 100);
       } else {
         await updateDoc(memberDoc.ref, { attendance: arrayUnion(today) });
         setSuccessMessage("Attendance marked successfully");
@@ -137,7 +169,7 @@ const AttendancePage = () => {
         setOpenDialog(false);
         setTimeout(() => {
           regInputRef.current.focus();
-      }, 100);
+        }, 100);
       }
       setTimeout(() => {
         setSuccessMessage("");
@@ -156,15 +188,15 @@ const AttendancePage = () => {
 
   return (
     <div className="attendance-container">
-    <div className="l-ct">
-    <img src={Logo2} className="ll-ct"></img>
-    </div>
-    
+      <div className="l-ct">
+        <img src={Logo2} className="ll-ct"></img>
+      </div>
+
       <section id="contact">
-        <h1 className="contact-title">        
-      Attendance <span> Registration</span>
+        <h1 className="contact-title">
+          Attendance <span> Registration</span>
         </h1>
-              <div className="contact-container">
+        <div className="contact-container">
           <div className="contact-london">
             <h2>
               Gym <span id="header-span"> Rules</span>
@@ -210,32 +242,62 @@ const AttendancePage = () => {
                 ENTER
               </button>
               {successMessage && (
-            <Alert
-              severity="success"
-              sx={{
-                position: "realtive",
-                width: "100%",
-                marginTop: "30px",
-                borderRadius: "0px"
-              }}
-            >
-              {successMessage}
-            </Alert>
-          )}
-          {errorMessage && (
-            <Alert
-              severity="error"
-              sx={{
-                position: "realtive",
-                width: "100%",
-                marginTop: "30px",
-                borderRadius: "0px"
-              }}
-            >
-              {errorMessage}
-            </Alert>
-          )}
-              {memberDetails && (
+                <Alert
+                  severity="success"
+                  sx={{
+                    position: "realtive",
+                    width: "100%",
+                    marginTop: "30px",
+                    borderRadius: "0px"
+                  }}
+                >
+                  {successMessage}
+                </Alert>
+              )}
+              {errorMessage && (
+                <Alert
+                  severity="error"
+                  sx={{
+                    position: "realtive",
+                    width: "100%",
+                    marginTop: "30px",
+                    borderRadius: "0px"
+                  }}
+                >
+                  {errorMessage}
+                </Alert>
+              )}
+              {memberDetails && memberDetails.branches && (
+                <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+                  <DialogTitle>Select Branch</DialogTitle>
+                  <DialogContent>
+                    <DialogContentText>
+                      Please select the branch for the registration number:
+                      <ul>
+                        {memberDetails.branches.map((branch, index) => (
+                          <li key={index}>
+                            <Button
+                              onClick={() => {
+                                memberDetails.resolve(branch);
+                                setOpenDialog(false);
+                              }}
+                            >
+                              {branch}
+                            </Button>
+                          </li>
+                        ))}
+                      </ul>
+                    </DialogContentText>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={() => setOpenDialog(false)} color="primary">
+                      Cancel
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+              )}
+
+              {memberDetails && !memberDetails.branches && (
                 <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
                   <DialogTitle>Member Details</DialogTitle>
                   <DialogContent>
@@ -247,25 +309,19 @@ const AttendancePage = () => {
                     </DialogContentText>
                   </DialogContent>
                   <DialogActions>
-                    <Button
-                      onClick={() => setOpenDialog(false)}
-                      color="primary"
-                    >
+                    <Button onClick={() => setOpenDialog(false)} color="primary">
                       Cancel
                     </Button>
-                    <Button
-                      onClick={handleMarkAttendance}
-                      color="primary"
-                      autoFocus
-                    >
+                    <Button onClick={handleMarkAttendance} color="primary" autoFocus>
                       Mark Attendance
                     </Button>
                   </DialogActions>
                 </Dialog>
               )}
+
             </div>
           </div>
-        
+
         </div>
       </section>
     </div>

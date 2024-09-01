@@ -28,6 +28,9 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Typography,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import { differenceInDays, addMonths, formatDistanceToNow } from "date-fns";
 import AddMemberModal from "../components/AddMemberModal";
@@ -63,6 +66,8 @@ const MembersPage = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState("All");
+  const [filterByBalance, setFilterByBalance] = useState(false); // State to manage checkbox
+
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -119,21 +124,20 @@ const MembersPage = () => {
     }
   }, [members]);
 
-  // useEffect(() => {
-  //   const filteredMembers = members.filter((member) =>
-  //     member.regno.includes(searchQuery.toLowerCase())
-  //   );
-  //   setSortedMembers(filteredMembers);
-  // }, [searchQuery, members]);
 
   useEffect(() => {
+
     const filteredMembers = members.filter(
       (member) =>
         member.regno.includes(searchQuery.toLowerCase()) &&
-        (selectedPlan === "All" || member.currentPlan === selectedPlan)
+        (selectedPlan === "All" || member.currentPlan === selectedPlan) &&
+        (!filterByBalance || CalculateBalance(
+          member.planHistory[member.planHistory.length - 1].amount,
+          member.planHistory[member.planHistory.length - 1].plan
+        ) != "Nil")
     );
     setSortedMembers(filteredMembers);
-  }, [searchQuery, selectedPlan, members]);
+  }, [searchQuery, selectedPlan, filterByBalance, members]);
 
   const fetchMembers = async () => {
     try {
@@ -331,12 +335,17 @@ const MembersPage = () => {
       return "";
     }
     const selectedPlanAmount = selectedPlan.amount;
+
     const diff = Number(selectedPlanAmount) - Number(paid);
+
     return diff === 0 ? "Nil" : diff;
   };
 
   const handlePlanChange = (event) => {
     setSelectedPlan(event.target.value);
+  };
+  const handleBalanceFilterChange = (event) => {
+    setFilterByBalance(event.target.checked);
   };
 
   return (
@@ -346,6 +355,7 @@ const MembersPage = () => {
           <FontAwesomeIcon icon={faBars} />
         </Button>
         <Sidebar isOpen={isSidebarOpen} handleClose={handleSidebarClose} />
+
         <Button
           variant="contained"
           color="primary"
@@ -383,8 +393,22 @@ const MembersPage = () => {
             </Select>
           </FormControl>
         </Grid2>
+        <Grid2 xs={12} sm={6} >
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={filterByBalance}
+                onChange={handleBalanceFilterChange}
+                color="primary"
+              />
+            }
+            label="Filter by Balance"
+          />
+        </Grid2>
       </Grid2>
-
+      <div style={{ textAlign: "right", marginBottom: "10px" }}>
+        <span style={{ backgroundColor: "black", padding: "0.4rem", color: "white" }}>Branch: {branch == "branch1" ? "Jaycees" : "Rangampalayam"}</span>
+      </div>
       <TableContainer component={Paper}>
         <Table
           sx={{
@@ -420,7 +444,7 @@ const MembersPage = () => {
                   cursor: "pointer",
                   backgroundColor:
                     daysLeft(member.planHistory) <= 5 ||
-                    daysLeft(member.planHistory) === "Expired"
+                      daysLeft(member.planHistory) === "Expired"
                       ? "#FFCDD2"
                       : "inherit",
                   color:
@@ -433,13 +457,12 @@ const MembersPage = () => {
                   {member.name}{" "}
                   {daysLeft(member.planHistory) <= 5 ? (
                     <Link
-                      to={`https://wa.me/91${
-                        member.phone
-                      }?text=${encodeURIComponent(
-                        `Hi there! This is a friendly reminder from Matrix Gym that your membership plan is about to expire in ${daysLeft(
-                          member.planHistory
-                        )} days. Please renew soon to continue enjoying our services. Thank you!`
-                      )}`}
+                      to={`https://wa.me/91${member.phone
+                        }?text=${encodeURIComponent(
+                          `Hi there! This is a friendly reminder from Matrix Gym that your membership plan is about to expire in ${daysLeft(
+                            member.planHistory
+                          )} days. Please renew soon to continue enjoying our services. Thank you!`
+                        )}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -451,11 +474,10 @@ const MembersPage = () => {
                     </Link>
                   ) : daysLeft(member.planHistory) === "Expired" ? (
                     <Link
-                      to={`https://wa.me/91${
-                        member.phone
-                      }?text=${encodeURIComponent(
-                        `Hi there! This is a friendly reminder from Matrix Gym that your membership plan is expired. Please renew soon to continue enjoying our services. Thank you!`
-                      )}`}
+                      to={`https://wa.me/91${member.phone
+                        }?text=${encodeURIComponent(
+                          `Hi there! This is a friendly reminder from Matrix Gym that your membership plan is expired. Please renew soon to continue enjoying our services. Thank you!`
+                        )}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >

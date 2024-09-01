@@ -139,14 +139,18 @@ const AbsenteesPage = () => {
   };
 
   const calculateDaysSinceLastPresent = (attendance) => {
-    if (!attendance || attendance.length === 0) return "N/A";
-
-    const lastAttendanceDate = new Date(attendance[attendance.length - 1]);
+    if (!attendance || attendance.length === 0) return "0";
+    
+    let lastAttendanceDate = new Date(attendance[attendance.length - 1]);
+    if (isNaN(lastAttendanceDate.getTime())) {
+      const [day, month, year] = attendance[attendance.length - 1].split('/');
+      lastAttendanceDate = new Date(`${month}/${day}/${year}`);
+  }
     const today = new Date();
 
     const differenceInTime = today.getTime() - lastAttendanceDate.getTime();
     const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
-
+    console.log(differenceInDays,new Date(attendance[attendance.length - 1]))
     return differenceInDays-1;
   };
 
@@ -246,6 +250,7 @@ const AbsenteesPage = () => {
             {absentees
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((absentee) => (
+                console.log(absentee.regno,absentee.name,absentee.attendance),
                 <TableRow key={absentee.id}>
                   <TableCell>{absentee.regno}</TableCell>
                   <TableCell>{absentee.name}</TableCell>
@@ -257,7 +262,7 @@ const AbsenteesPage = () => {
                         days 
                       </TableCell>
                       <TableCell>
-                        {absentee.attendance[absentee.attendance.length - 1]}
+                        {absentee.attendance.length>0&&absentee.attendance[absentee.attendance.length - 1]}
                       </TableCell>
                     </>
                   )}

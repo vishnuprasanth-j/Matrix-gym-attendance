@@ -102,8 +102,10 @@ const AddMemberModal = ({ open, handleClose, plans, updateMembers }) => {
         planEnd: Timestamp.fromDate(planEndTS),
         amount: amount,
       });
+      let strippedRegNo=memberData.regno.trim()
       const memberWithallFields = {
         ...memberData,
+        regno:strippedRegNo,
         photo: photoUrl,
         branch: branch,
         planHistory: plArray,
