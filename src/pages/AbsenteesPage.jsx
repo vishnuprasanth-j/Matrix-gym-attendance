@@ -248,9 +248,9 @@ const AbsenteesPage = () => {
           </TableHead>
           <TableBody>
             {absentees
+              .filter(absentee => absentee.attendance && absentee.attendance.length > 0) 
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((absentee) => (
-                console.log(absentee.regno,absentee.name,absentee.attendance),
                 <TableRow key={absentee.id}>
                   <TableCell>{absentee.regno}</TableCell>
                   <TableCell>{absentee.name}</TableCell>
@@ -262,7 +262,7 @@ const AbsenteesPage = () => {
                         days 
                       </TableCell>
                       <TableCell>
-                        {absentee.attendance.length>0&&absentee.attendance[absentee.attendance.length - 1]}
+                        {absentee.attendance[absentee.attendance.length - 1]}
                       </TableCell>
                     </>
                   )}
@@ -283,7 +283,7 @@ const AbsenteesPage = () => {
         <TablePagination
           rowsPerPageOptions={[5, 10, 15]}
           component="div"
-          count={absentees.length}
+          count={absentees.filter(absentee => absentee.attendance && absentee.attendance.length > 0).length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
