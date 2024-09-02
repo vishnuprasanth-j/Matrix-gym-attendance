@@ -153,7 +153,7 @@ const AttendancePage = () => {
 
   const handleMarkAttendance = async () => {
     try {
-      const today = new Date().toLocaleDateString();
+      const today = new Date().toLocaleDateString('en-US');
       const attendanceArray = memberDoc.data().attendance || [];
       if (attendanceArray.includes(today)) {
         setErrorMessage("Attendance already marked for today");
